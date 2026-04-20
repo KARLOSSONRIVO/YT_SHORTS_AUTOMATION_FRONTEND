@@ -8,9 +8,9 @@ export function ProjectList({ projects }: { projects: Project[] }) {
     return (
       <EmptyState
         title="No projects yet"
-        description="Upload a long-form source video to start a project and unlock clip review, subtitles, and publishing."
+        description="Start with either a long-form source upload for clipping or a topic-led faceless story project."
         ctaHref={appRoutes.uploadsNew}
-        ctaLabel="Upload Video"
+        ctaLabel="New Project"
       />
     );
   }

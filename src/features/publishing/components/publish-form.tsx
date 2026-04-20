@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Channel } from "@/features/channels/types";
 import type { Clip } from "@/features/clips/types";
 import { usePublishClipMutation } from "../hooks/use-publish-clip-mutation";
+import { mergeDescriptionWithHashtags } from "../lib/hashtags";
 import { publishClipSchema, type PublishClipValues } from "../schemas/publish-clip-schema";
 
 export function PublishForm({
@@ -26,15 +28,25 @@ export function PublishForm({
     resolver: zodResolver(publishClipSchema),
     defaultValues: {
       clipId: clip.id,
-      channelId: channels[0]?.id ?? "",
+      channelId: "",
       title: clip.title,
       description: clip.description || "",
+      hashtags: "shorts",
       privacyStatus: "private"
     }
   });
 
+  useEffect(() => {
+    if (!form.getValues("channelId") && channels.length) {
+      form.setValue("channelId", channels[0].id, { shouldValidate: true });
+    }
+  }, [channels, form]);
+
   const onSubmit = form.handleSubmit(async (values) => {
-    await mutation.mutateAsync(values);
+    await mutation.mutateAsync({
+      ...values,
+      description: mergeDescriptionWithHashtags(values.description ?? "", values.hashtags)
+    });
   });
 
   return (
@@ -45,7 +57,7 @@ export function PublishForm({
           <option value="">Select a channel</option>
           {channels.map((channel) => (
             <option key={channel.id} value={channel.id}>
-              {channel.title}
+              {channel.title} ({channel.externalChannelId})
             </option>
           ))}
         </Select>
@@ -57,6 +69,11 @@ export function PublishForm({
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" {...form.register("description")} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="hashtags">Hashtags</Label>
+        <Input id="hashtags" placeholder="shorts, ocean, story" {...form.register("hashtags")} />
+        <p className="text-xs text-muted-foreground">Separate tags with commas or spaces. We’ll format them as #hashtags on publish.</p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="privacyStatus">Privacy</Label>

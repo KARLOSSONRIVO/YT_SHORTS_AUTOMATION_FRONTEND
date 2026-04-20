@@ -19,7 +19,7 @@ export default function ChannelsPage() {
         description="Surface connection health clearly here so publish forms can stay streamlined and avoid surprising the user at the last step."
         actions={<ConnectChannelButton userId={userId} />}
       />
-      <ChannelStatusCard channels={channelsQuery.data ?? []} />
+      <ChannelStatusCard channels={channelsQuery.data ?? []} userId={userId} />
     </div>
   );
 }

@@ -1,13 +1,21 @@
 import { cn } from "@/lib/utils";
-import type { WorkflowStage } from "../types";
+import type { ProjectType, WorkflowStage } from "../types";
 
-const stages: WorkflowStage[] = ["ingest", "transcription", "analysis", "render", "review", "publish", "completed"];
+const uploadedVideoStages: WorkflowStage[] = ["ingest", "transcription", "analysis", "render", "review", "publish", "completed"];
+const facelessStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "scenes", "render", "completed"];
 
-export function WorkflowStageStepper({ currentStage }: { currentStage: WorkflowStage }) {
+export function WorkflowStageStepper({
+  currentStage,
+  projectType
+}: {
+  currentStage: WorkflowStage;
+  projectType: ProjectType;
+}) {
+  const stages = projectType === "faceless_story" ? facelessStages : uploadedVideoStages;
   const activeIndex = stages.indexOf(currentStage);
 
   return (
-    <div className="grid gap-3 md:grid-cols-7">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
       {stages.map((stage, index) => (
         <div key={stage} className="flex items-center gap-3">
           <div

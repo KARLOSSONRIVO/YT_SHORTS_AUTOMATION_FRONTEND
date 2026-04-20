@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatRelativeDate } from "@/lib/utils/format";
-import { getProjectTone } from "../lib/project-status";
+import { getProjectTone, getProjectTypeLabel } from "../lib/project-status";
 import type { Project } from "../types";
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -12,7 +13,12 @@ export function ProjectCard({ project }: { project: Project }) {
       <Card className="h-full">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
-            <CardTitle className="font-heading">{project.title}</CardTitle>
+            <div className="space-y-3">
+              <Badge variant="outline" className="rounded-full px-3 py-1">
+                {getProjectTypeLabel(project.projectType)}
+              </Badge>
+              <CardTitle className="font-heading">{project.title}</CardTitle>
+            </div>
             <StatusBadge tone={getProjectTone(project.status)}>{project.status}</StatusBadge>
           </div>
         </CardHeader>

@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { InlineError } from "@/components/common/inline-error";
+import { FacelessPublishPanel } from "@/features/faceless/components/faceless-publish-panel";
 import { ProjectHeader } from "@/features/projects/components/project-header";
 import { ProjectProgressPanel } from "@/features/projects/components/project-progress-panel";
 import { JobTimeline } from "@/features/jobs/components/job-timeline";
@@ -26,6 +27,7 @@ export default function ProjectDetailPage() {
     <div className="space-y-6">
       <ProjectHeader project={projectQuery.data} />
       <ProjectProgressPanel project={projectQuery.data} />
+      {projectQuery.data.projectType === "faceless_story" ? <FacelessPublishPanel project={projectQuery.data} /> : null}
       <JobTimeline jobs={jobsQuery.data ?? []} />
     </div>
   );

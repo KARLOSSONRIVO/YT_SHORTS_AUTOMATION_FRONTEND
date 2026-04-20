@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { ProjectList } from "@/features/projects/components/project-list";
 import { useProjectsQuery } from "@/features/projects/hooks/use-projects-query";
+import { isProjectActive } from "@/features/projects/lib/project-status";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ export default function DashboardPage() {
         <StatCard label="Total projects" value={String(projects.length)} hint="Source videos tracked in the system" />
         <StatCard
           label="Processing now"
-          value={String(projects.filter((project) => project.status === "processing").length)}
+          value={String(projects.filter((project) => isProjectActive(project.status)).length)}
           hint="Projects actively moving through the backend"
         />
         <StatCard
