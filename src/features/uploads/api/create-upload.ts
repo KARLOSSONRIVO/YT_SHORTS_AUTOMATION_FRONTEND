@@ -5,6 +5,8 @@ export async function createUpload(input: {
   userId: string;
   title: string;
   description?: string;
+  hashtags?: string;
+  targetClipCount: number;
   fontFamily: string;
   fontSize: number;
   fillColor: string;
@@ -19,6 +21,8 @@ export async function createUpload(input: {
   formData.append("userId", input.userId);
   formData.append("title", input.title);
   if (input.description) formData.append("description", input.description);
+  if (input.hashtags) formData.append("hashtags", input.hashtags);
+  formData.append("targetClipCount", `${input.targetClipCount}`);
   formData.append("fontFamily", input.fontFamily);
   formData.append("fontSize", `${input.fontSize}`);
   formData.append("fillColor", input.fillColor);

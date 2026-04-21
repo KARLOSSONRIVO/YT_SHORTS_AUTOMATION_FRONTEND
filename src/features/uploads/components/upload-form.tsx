@@ -25,6 +25,8 @@ export function UploadForm({ userId }: { userId: string }) {
       userId,
       title: "",
       description: "",
+      hashtags: "shorts",
+      targetClipCount: 5,
       fontFamily: "Montserrat ExtraBold",
       fontSize: 64,
       fillColor: "#FFFFFF",
@@ -75,6 +77,17 @@ export function UploadForm({ userId }: { userId: string }) {
               ) : null}
             </div>
             <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="hashtags">Hashtags</Label>
+              <Input id="hashtags" placeholder="shorts, lakers, houston" {...form.register("hashtags")} />
+              {form.formState.errors.hashtags ? (
+                <p className="text-sm text-rose-700">{form.formState.errors.hashtags.message}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Separate tags with commas or spaces. We&apos;ll carry these into the publish form later.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2 md:col-span-2">
               <div className="rounded-[28px] border border-border/70 bg-background/80 p-5">
                 <div className="mb-4">
                   <p className="text-sm font-semibold text-foreground">Subtitle style for final Shorts render</p>
@@ -83,6 +96,16 @@ export function UploadForm({ userId }: { userId: string }) {
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="targetClipCount">Clips to render</Label>
+                    <Input
+                      id="targetClipCount"
+                      min={1}
+                      max={20}
+                      type="number"
+                      {...form.register("targetClipCount", { valueAsNumber: true })}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="fontFamily">Font family</Label>
                     <Input id="fontFamily" placeholder="Montserrat ExtraBold" {...form.register("fontFamily")} />

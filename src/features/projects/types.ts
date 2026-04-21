@@ -45,6 +45,7 @@ export interface Project {
   userId: string;
   title: string;
   description?: string;
+  hashtags?: string;
   projectType: ProjectType;
   topic?: string;
   platforms?: Array<"youtube" | "tiktok">;

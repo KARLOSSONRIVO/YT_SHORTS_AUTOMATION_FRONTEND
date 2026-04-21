@@ -20,7 +20,15 @@ export function useReviewClipMutation(projectId: string) {
           clip.id === clipId
             ? {
                 ...clip,
-                reviewStatus
+                reviewStatus,
+                publishStatus: reviewStatus === "approved" ? "queued" : "not_ready",
+                ...(reviewStatus === "rejected"
+                  ? {
+                      outputStorageKey: undefined,
+                      outputUrl: undefined,
+                      renderStatus: "queued" as const
+                    }
+                  : {})
               }
             : clip
         )

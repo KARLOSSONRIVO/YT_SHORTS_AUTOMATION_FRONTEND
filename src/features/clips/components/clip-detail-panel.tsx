@@ -15,8 +15,8 @@ import { ClipActionsBar } from "./clip-actions-bar";
 import { useReviewClipMutation } from "../hooks/use-review-clip-mutation";
 
 const previewStateLabel: Record<Clip["renderStatus"], string> = {
-  queued: "Review the source segment first. If the cut looks good, approve it to queue the final render.",
-  rendering: "You can keep reviewing the source segment while the final rendered Short is being processed.",
+  queued: "This clip is waiting for a render pass. Approved clips can be published once the render is ready.",
+  rendering: "This clip is already being rendered. You can keep reviewing while the final Short finishes processing.",
   rendered: "Rendered clip is ready for playback.",
   failed: "Render failed. Use the source segment preview to keep reviewing while you inspect the job timeline."
 };
@@ -71,6 +71,7 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
         <div className="mt-5">
           <ClipActionsBar
             isPending={reviewMutation.isPending}
+            reviewStatus={clip.reviewStatus}
             onApprove={() => reviewMutation.mutate({ clipId: clip.id, reviewStatus: "approved" })}
             onReject={() => reviewMutation.mutate({ clipId: clip.id, reviewStatus: "rejected" })}
           />

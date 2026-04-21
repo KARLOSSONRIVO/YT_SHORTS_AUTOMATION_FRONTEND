@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { Channel } from "@/features/channels/types";
 import type { Clip } from "@/features/clips/types";
+import { useProjectDetailQuery } from "@/features/projects/hooks/use-project-detail-query";
 import { usePublishClipMutation } from "../hooks/use-publish-clip-mutation";
 import { mergeDescriptionWithHashtags } from "../lib/hashtags";
 import { publishClipSchema, type PublishClipValues } from "../schemas/publish-clip-schema";
@@ -24,6 +25,7 @@ export function PublishForm({
   projectId?: string;
 }) {
   const mutation = usePublishClipMutation(projectId);
+  const projectQuery = useProjectDetailQuery(projectId ?? "");
   const form = useForm<PublishClipValues>({
     resolver: zodResolver(publishClipSchema),
     defaultValues: {
@@ -41,6 +43,40 @@ export function PublishForm({
       form.setValue("channelId", channels[0].id, { shouldValidate: true });
     }
   }, [channels, form]);
+
+  useEffect(() => {
+    const savedHashtags = projectQuery.data?.hashtags?.trim();
+    if (!savedHashtags) {
+      return;
+    }
+
+    form.setValue("hashtags", savedHashtags, { shouldValidate: false });
+  }, [form, projectQuery.data?.hashtags]);
+
+  useEffect(() => {
+    const projectTitle = projectQuery.data?.title?.trim();
+    if (!projectTitle) {
+      return;
+    }
+
+    const currentTitle = form.getValues("title").trim();
+    if (!currentTitle || currentTitle === clip.title.trim()) {
+      form.setValue("title", projectTitle, { shouldValidate: false });
+    }
+  }, [clip.title, form, projectQuery.data?.title]);
+
+  useEffect(() => {
+    const projectDescription = projectQuery.data?.description?.trim();
+    if (!projectDescription) {
+      return;
+    }
+
+    const currentDescription = form.getValues("description").trim();
+    const clipDescription = (clip.description ?? "").trim();
+    if (!currentDescription || currentDescription === clipDescription) {
+      form.setValue("description", projectDescription, { shouldValidate: false });
+    }
+  }, [clip.description, form, projectQuery.data?.description]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     await mutation.mutateAsync({
@@ -73,7 +109,9 @@ export function PublishForm({
       <div className="space-y-2">
         <Label htmlFor="hashtags">Hashtags</Label>
         <Input id="hashtags" placeholder="shorts, ocean, story" {...form.register("hashtags")} />
-        <p className="text-xs text-muted-foreground">Separate tags with commas or spaces. We’ll format them as #hashtags on publish.</p>
+        <p className="text-xs text-muted-foreground">
+          Separate tags with commas or spaces. We'll format them as #hashtags on publish.
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="privacyStatus">Privacy</Label>
