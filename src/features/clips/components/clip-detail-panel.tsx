@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/common/section-card";
@@ -14,18 +15,48 @@ import type { Clip } from "../types";
 import { ClipActionsBar } from "./clip-actions-bar";
 import { useReviewClipMutation } from "../hooks/use-review-clip-mutation";
 
-const previewStateLabel: Record<Clip["renderStatus"], string> = {
-  queued: "This clip is waiting for a render pass. Approved clips can be published once the render is ready.",
-  rendering: "This clip is already being rendered. You can keep reviewing while the final Short finishes processing.",
-  rendered: "Rendered clip is ready for playback.",
-  failed: "Render failed. Use the source segment preview to keep reviewing while you inspect the job timeline."
-};
-
 export function ClipDetailPanel({ clip }: { clip?: Clip }) {
   const { user } = useAuth();
   const subtitleQuery = useClipSubtitleQuery(clip?.id);
   const channelsQuery = useChannelsQuery(user?.id ?? "");
   const reviewMutation = useReviewClipMutation(clip?.projectId ?? "");
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [isPublishingClip, setIsPublishingClip] = useState(false);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const canOpenPublishForm =
+    clip?.reviewStatus === "approved" &&
+    clip.renderStatus === "rendered" &&
+    clip.publishStatus !== "published";
+  const publishStateMessage =
+    clip?.publishStatus === "published"
+      ? "This clip is already published."
+      : clip?.reviewStatus !== "approved"
+        ? "Approve the clip before opening the publish form."
+        : clip?.renderStatus !== "rendered"
+          ? "Wait for the render to finish before publishing."
+          : undefined;
+  const previewMessage =
+    clip?.reviewStatus === "rejected"
+      ? "Rejected clips are removed from publish and preview storage."
+      : clip?.outputUrl
+        ? "Clip preview is ready for playback."
+        : clip?.reviewStatus === "approved"
+          ? "Approved clip is waiting for its preview render."
+          : "Review this clip and decide whether to approve or reject it.";
+
+  useEffect(() => {
+    if (!successToast) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setSuccessToast(null);
+    }, 5000);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [successToast]);
 
   if (!clip) {
     return (
@@ -40,6 +71,11 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
 
   return (
     <div className="space-y-6">
+      {successToast ? (
+        <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow-lg">
+          {successToast}
+        </div>
+      ) : null}
       <SectionCard
         title={clip.title}
         description={clip.analysisReason || "No analysis reason provided yet."}
@@ -53,15 +89,15 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
           clipEndSeconds={clip.outputUrl ? undefined : clip.endTimeSeconds}
           subtitleSegments={subtitleQuery.data?.segments}
         />
-        <p className="mt-4 text-sm text-muted-foreground">{previewStateLabel[clip.renderStatus]}</p>
+        <p className="mt-4 text-sm text-muted-foreground">{previewMessage}</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl bg-background p-3">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Review</p>
             <p className="mt-2 text-sm font-semibold capitalize text-foreground">{clip.reviewStatus}</p>
           </div>
           <div className="rounded-2xl bg-background p-3">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Render</p>
-            <p className="mt-2 text-sm font-semibold capitalize text-foreground">{clip.renderStatus}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Publish</p>
+            <p className="mt-2 text-sm font-semibold capitalize text-foreground">{clip.publishStatus}</p>
           </div>
           <div className="rounded-2xl bg-background p-3">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Score</p>
@@ -76,18 +112,49 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
             onReject={() => reviewMutation.mutate({ clipId: clip.id, reviewStatus: "rejected" })}
           />
         </div>
-        <Dialog>
+        <Dialog
+          open={isPublishDialogOpen}
+          onOpenChange={(open) => {
+            if (isPublishingClip) {
+              return;
+            }
+
+            setIsPublishDialogOpen(open);
+          }}
+        >
           <DialogTrigger asChild>
-            <Button className="mt-4 w-full" disabled={clip.renderStatus !== "rendered"} variant="outline">
-              Open Publish Form
+            <Button className="mt-4 w-full" disabled={!canOpenPublishForm} variant="outline">
+              {clip.publishStatus === "published" ? "Already Published" : "Open Publish Form"}
             </Button>
           </DialogTrigger>
+          {publishStateMessage ? (
+            <p className="mt-2 text-center text-xs text-muted-foreground">{publishStateMessage}</p>
+          ) : null}
+          {clip.youtubeVideoUrl ? (
+            <a
+              className="mt-2 block text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+              href={clip.youtubeVideoUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open on YouTube
+            </a>
+          ) : null}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Publish clip</DialogTitle>
               <DialogDescription>Keep publishing in a drawer or dialog so review flow stays uninterrupted.</DialogDescription>
             </DialogHeader>
-            <PublishForm clip={clip} channels={channelsQuery.data ?? []} projectId={clip.projectId} />
+            <PublishForm
+              clip={clip}
+              channels={channelsQuery.data ?? []}
+              projectId={clip.projectId}
+              onPendingChange={setIsPublishingClip}
+              onSuccess={() => {
+                setIsPublishDialogOpen(false);
+                setSuccessToast("Uploaded successfully.");
+              }}
+            />
           </DialogContent>
         </Dialog>
       </SectionCard>

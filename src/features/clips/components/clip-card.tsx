@@ -23,11 +23,8 @@ export function ClipCard({
         )}
       >
         <div className="relative aspect-[9/12] bg-[linear-gradient(180deg,rgba(30,41,59,0.92),rgba(17,24,39,0.95))]">
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-[linear-gradient(180deg,transparent,rgba(15,23,42,0.92))] px-4 py-4 text-xs text-white/80">
-            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 capitalize">
-              {clip.renderStatus}
-            </span>
-            <span>{clip.outputUrl ? "Rendered preview" : clip.sourceVideoUrl ? "Source preview" : "No preview yet"}</span>
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end bg-[linear-gradient(180deg,transparent,rgba(15,23,42,0.92))] px-4 py-4 text-xs text-white/80">
+            <span>{clip.outputUrl ? "Clip preview" : clip.sourceVideoUrl ? "Awaiting preview" : "No preview yet"}</span>
           </div>
         </div>
         <CardContent className="space-y-3 p-4">
@@ -40,7 +37,19 @@ export function ClipCard({
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Score {clip.score}</span>
-            <span className="capitalize">{clip.publishStatus}</span>
+            {clip.youtubeVideoUrl ? (
+              <a
+                className="capitalize text-primary underline-offset-4 hover:underline"
+                href={clip.youtubeVideoUrl}
+                rel="noreferrer"
+                target="_blank"
+                onClick={(event) => event.stopPropagation()}
+              >
+                YouTube
+              </a>
+            ) : (
+              <span className="capitalize">{clip.publishStatus}</span>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -16,6 +16,10 @@ export interface Clip {
   subtitleStorageKey?: string;
   analysisReason?: string;
   publishedAt?: string;
+  youtubeVideoId?: string;
+  youtubeVideoUrl?: string;
+  localArchiveStorageKey?: string;
+  localArchiveMetadataKey?: string;
 }
 
 export interface ClipSubtitleSegment {

@@ -24,6 +24,12 @@ export function ClipReviewShell({
   }, [clips, selectedClipId]);
 
   const selectedClip = useMemo(() => clips.find((clip) => clip.id === selectedClipId), [clips, selectedClipId]);
+  const pendingReviewCount = useMemo(
+    () => clips.filter((clip) => clip.reviewStatus === "pending_review").length,
+    [clips]
+  );
+  const approvedCount = useMemo(() => clips.filter((clip) => clip.reviewStatus === "approved").length, [clips]);
+  const rejectedCount = useMemo(() => clips.filter((clip) => clip.reviewStatus === "rejected").length, [clips]);
 
   return (
     <SectionCard
@@ -33,21 +39,15 @@ export function ClipReviewShell({
       <div className="mb-6 grid gap-3 rounded-[28px] border border-border/70 bg-background/80 p-4 md:grid-cols-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Pending Review</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {clips.filter((clip) => clip.reviewStatus === "pending_review").length}
-          </p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">{pendingReviewCount}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Rendered</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {clips.filter((clip) => clip.renderStatus === "rendered").length}
-          </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Approved</p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">{approvedCount}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Queued For Render</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">
-            {clips.filter((clip) => clip.renderStatus === "queued" || clip.renderStatus === "rendering").length}
-          </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Rejected</p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">{rejectedCount}</p>
         </div>
       </div>
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1.15fr)_420px]">
