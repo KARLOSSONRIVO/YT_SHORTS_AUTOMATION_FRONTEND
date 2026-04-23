@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const createFacelessProjectSchema = z.object({
-  userId: z.string().min(1, "User id is required"),
   title: z.string().max(120).optional(),
   description: z.string().max(5000).optional(),
   topic: z.string().min(2, "Topic must be at least 2 characters").max(240),

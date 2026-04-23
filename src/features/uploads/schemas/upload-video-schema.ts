@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const uploadVideoSchema = z.object({
-  userId: z.string().min(1, "User id is required"),
   title: z.string().min(3, "Title must be at least 3 characters").max(160),
   description: z.string().max(5000).optional(),
   hashtags: z.string().max(300, "Keep hashtags concise").default("shorts"),

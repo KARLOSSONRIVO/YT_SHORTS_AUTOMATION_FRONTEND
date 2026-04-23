@@ -23,7 +23,7 @@ import { usePublishFacelessProjectMutation } from "../hooks/use-publish-faceless
 
 export function FacelessPublishPanel({ project }: { project: Project }) {
   const { user } = useAuth();
-  const channelsQuery = useChannelsQuery(user?.id ?? "");
+  const channelsQuery = useChannelsQuery(Boolean(user?.id));
   const mutation = usePublishFacelessProjectMutation(project.id);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [latestVideoUrl, setLatestVideoUrl] = useState<string | null>(project.publishInfo?.videoUrl ?? null);

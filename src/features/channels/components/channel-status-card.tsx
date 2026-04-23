@@ -6,8 +6,8 @@ import { SectionCard } from "@/components/common/section-card";
 import type { Channel } from "../types";
 import { useDisconnectChannelMutation } from "../hooks/use-disconnect-channel-mutation";
 
-export function ChannelStatusCard({ channels, userId }: { channels: Channel[]; userId: string }) {
-  const disconnectMutation = useDisconnectChannelMutation(userId);
+export function ChannelStatusCard({ channels }: { channels: Channel[] }) {
+  const disconnectMutation = useDisconnectChannelMutation();
 
   return (
     <SectionCard

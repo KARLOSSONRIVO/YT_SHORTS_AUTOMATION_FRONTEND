@@ -8,8 +8,7 @@ import { useChannelsQuery } from "@/features/channels/hooks/use-channels-query";
 
 export default function ChannelsPage() {
   const { user } = useAuth();
-  const userId = user?.id ?? "";
-  const channelsQuery = useChannelsQuery(userId);
+  const channelsQuery = useChannelsQuery(Boolean(user?.id));
 
   return (
     <div className="space-y-6">
@@ -17,9 +16,9 @@ export default function ChannelsPage() {
         eyebrow="Settings"
         title="YouTube channels"
         description="Surface connection health clearly here so publish forms can stay streamlined and avoid surprising the user at the last step."
-        actions={<ConnectChannelButton userId={userId} />}
+        actions={<ConnectChannelButton />}
       />
-      <ChannelStatusCard channels={channelsQuery.data ?? []} userId={userId} />
+      <ChannelStatusCard channels={channelsQuery.data ?? []} />
     </div>
   );
 }

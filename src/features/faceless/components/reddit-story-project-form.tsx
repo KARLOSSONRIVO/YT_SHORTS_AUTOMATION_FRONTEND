@@ -5,43 +5,39 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { InlineError } from "@/components/common/inline-error";
 import { SectionCard } from "@/components/common/section-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { apiBinaryRequest } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/errors";
 import { appRoutes } from "@/lib/constants/routes";
-import { fallbackFacelessVoices } from "../lib/fallback-voices";
-import { useCreateFacelessProjectMutation } from "../hooks/use-create-faceless-project";
+import { useCreateRedditStoryProjectMutation } from "../hooks/use-create-reddit-story-project";
 import { useFacelessVoicesQuery } from "../hooks/use-faceless-voices-query";
+import { fallbackFacelessVoices } from "../lib/fallback-voices";
 import {
-  createFacelessProjectSchema,
-  type CreateFacelessProjectValues
-} from "../schemas/create-faceless-project-schema";
+  createRedditStoryProjectSchema,
+  type CreateRedditStoryProjectValues
+} from "../schemas/create-reddit-story-project-schema";
 
 const PREVIEW_BLOCKED_LANGUAGES = new Set(["Japanese"]);
 
-export function FacelessProjectForm() {
+export function RedditStoryProjectForm() {
   const router = useRouter();
   const { user } = useAuth();
-  const mutation = useCreateFacelessProjectMutation();
+  const mutation = useCreateRedditStoryProjectMutation();
   const voicesQuery = useFacelessVoicesQuery(Boolean(user?.id));
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const form = useForm<CreateFacelessProjectValues>({
-    resolver: zodResolver(createFacelessProjectSchema),
+  const [formError, setFormError] = useState<string | null>(null);
+  const form = useForm<CreateRedditStoryProjectValues>({
+    resolver: zodResolver(createRedditStoryProjectSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      topic: "",
-      targetDurationSeconds: 45,
-      stylePreset: "cinematic documentary",
+      maxDurationSeconds: undefined,
       voice: "af_sarah",
-      tone: "mysterious and cinematic",
-      audience: "curious viewers who enjoy myth and history",
       startImmediately: true
     }
   });
@@ -106,8 +102,17 @@ export function FacelessProjectForm() {
   }, [previewSrc]);
 
   const onSubmit = form.handleSubmit(async (values) => {
-    const result = await mutation.mutateAsync({ ...values, platforms: ["youtube"] });
-    router.push(`${appRoutes.projects}/${result.project.id}`);
+    setFormError(null);
+    try {
+      const result = await mutation.mutateAsync(values);
+      router.push(`${appRoutes.projects}/${result.project.id}`);
+    } catch (error) {
+      setFormError(
+        error instanceof ApiError
+          ? error.message
+          : "We created the Reddit project but could not start the pipeline automatically."
+      );
+    }
   });
 
   const loadVoicePreview = async () => {
@@ -135,44 +140,29 @@ export function FacelessProjectForm() {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
       <SectionCard
-        title="Create faceless story project"
-        description="Start with a topic and let the project page track script, audio, subtitles, scenes, and the final vertical render."
+        title="Create faceless Reddit story project"
+        description="Pull the freshest unused trending Reddit story automatically, narrate it, subtitle it, and render it against your provided gameplay template."
       >
         <form className="space-y-6" onSubmit={onSubmit}>
+          {formError ? <InlineError title="Reddit story did not start" message={formError} /> : null}
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="topic">Story topic</Label>
-              <Textarea
-                id="topic"
-                placeholder="The mystery of Atlantis and how an empire vanished beneath the sea."
-                {...form.register("topic")}
-              />
-              {form.formState.errors.topic ? (
-                <p className="text-sm text-rose-700">{form.formState.errors.topic.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="title">Project title</Label>
-              <Input id="title" placeholder="The Lost City of Atlantis" {...form.register("title")} />
-              {form.formState.errors.title ? (
-                <p className="text-sm text-rose-700">{form.formState.errors.title.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Optional internal notes for this faceless video." {...form.register("description")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="targetDurationSeconds">Target duration</Label>
+              <Label htmlFor="maxDurationSeconds">Max duration cap</Label>
               <Input
-                id="targetDurationSeconds"
+                id="maxDurationSeconds"
                 min={15}
                 max={180}
                 type="number"
-                {...form.register("targetDurationSeconds", { valueAsNumber: true })}
+                placeholder="Optional"
+                {...form.register("maxDurationSeconds", {
+                  setValueAs: (value) => (value === "" || value === undefined ? undefined : Number(value))
+                })}
               />
+              <p className="text-xs text-muted-foreground">
+                Optional. Leave this blank if you want the story itself to determine the length.
+              </p>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="voice">Voice</Label>
               <Select id="voice" disabled={voicesQuery.isLoading || voiceOptions.length === 0} {...form.register("voice")}>
                 {voicesQuery.isLoading ? <option value="">Loading Kokoro voices...</option> : null}
@@ -186,12 +176,9 @@ export function FacelessProjectForm() {
               <p className="text-xs text-muted-foreground">{voiceCatalogSummary}</p>
               <div className="rounded-xl border border-border/80 bg-background/70 px-4 py-3">
                 {voicesQuery.isLoading ? (
-                  <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
+                  <div className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
                     <LoaderCircle className="h-6 w-6 animate-spin text-primary" />
                     <p className="text-sm font-medium text-foreground">Loading Kokoro voices...</p>
-                    <p className="text-sm text-muted-foreground">
-                      Pulling the available voices from the local model before we show the dropdown choices.
-                    </p>
                   </div>
                 ) : (
                   <>
@@ -201,10 +188,7 @@ export function FacelessProjectForm() {
                     <p className="mt-1 text-sm text-muted-foreground">
                       {selectedVoiceOption
                         ? `${selectedVoiceOption.language} · ${selectedVoiceOption.gender}${selectedVoiceOption.quality_grade ? ` · Grade ${selectedVoiceOption.quality_grade}` : ""}`
-                        : "Choose a voice to see the preview details."}
-                    </p>
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      Example line: "{selectedVoiceOption?.sample_text ?? "In the last few months, this faceless channel has exploded."}"
+                        : "Choose a voice to preview the Reddit narration."}
                     </p>
                     <div className="mt-4 flex flex-col gap-3">
                       <Button type="button" variant="outline" disabled={!selectedVoiceOption || isPreviewLoading} onClick={loadVoicePreview}>
@@ -218,27 +202,10 @@ export function FacelessProjectForm() {
                     </div>
                   </>
                 )}
-                {voicesQuery.isError ? (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Using the local fallback voice list until the backend voice catalog is refreshed.
-                  </p>
-                ) : null}
                 <p className="mt-2 text-xs text-muted-foreground">
                   Japanese Kokoro voices are currently unavailable in this project.
                 </p>
               </div>
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="stylePreset">Visual style</Label>
-              <Input id="stylePreset" placeholder="cinematic documentary" {...form.register("stylePreset")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tone">Tone</Label>
-              <Input id="tone" placeholder="mysterious and cinematic" {...form.register("tone")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="audience">Audience</Label>
-              <Input id="audience" placeholder="history and mystery fans" {...form.register("audience")} />
             </div>
             <label className="flex items-start gap-3 rounded-xl border border-border/80 bg-background/70 px-4 py-4 md:col-span-2">
               <input
@@ -247,9 +214,9 @@ export function FacelessProjectForm() {
                 {...form.register("startImmediately")}
               />
               <span className="space-y-1">
-                <span className="block text-sm font-semibold text-foreground">Start the faceless pipeline right away</span>
+                <span className="block text-sm font-semibold text-foreground">Start the Reddit story pipeline right away</span>
                 <span className="block text-sm text-muted-foreground">
-                  If this is off, we create the project and let you trigger the run from the project page.
+                  We create the project, fetch the freshest trending post, then queue narration, subtitles, and the final render.
                 </span>
               </span>
             </label>
@@ -259,7 +226,7 @@ export function FacelessProjectForm() {
               Cancel
             </Button>
             <Button disabled={mutation.isPending} type="submit">
-              {mutation.isPending ? "Creating project..." : "Create Project"}
+              {mutation.isPending ? "Creating Reddit project..." : "Create Reddit Project"}
             </Button>
           </div>
         </form>
@@ -267,16 +234,17 @@ export function FacelessProjectForm() {
       <div className="space-y-6">
         <SectionCard title="What happens next">
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>Generate the script from your topic and tone.</li>
-            <li>Build narration, subtitles, scene images, and the final render.</li>
-            <li>Use the project page to monitor jobs and recover a failed stage.</li>
+            <li>Fetch the highest-ranked fresh Reddit self-post from the built-in story feed.</li>
+            <li>Skip any story that already exists in the database and move to the next best candidate.</li>
+            <li>Use the story itself to drive pacing, only trimming when it would run past your optional max cap.</li>
+            <li>Use the Reddit post title as both the project title and the default YouTube title.</li>
           </ul>
         </SectionCard>
         <SectionCard title="Good starting inputs">
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>Keep the topic specific enough to imply a beginning, conflict, and payoff.</li>
-            <li>Use a duration between 30 and 60 seconds for the cleanest Shorts pacing.</li>
-            <li>Save extra visual direction for the style field instead of overloading the topic.</li>
+            <li>We automatically search story-heavy subreddits like AskReddit, tifu, confession, and offmychest.</li>
+            <li>Use the duration cap only when you want to keep long posts from running too far.</li>
+            <li>Pick a voice first, then preview it to make sure the pacing fits the story tone.</li>
           </ul>
         </SectionCard>
       </div>

@@ -1,7 +1,7 @@
 export const queryKeys = {
   projects: {
     all: ["projects"] as const,
-    list: (userId: string) => ["projects", "list", userId] as const,
+    list: () => ["projects", "list"] as const,
     detail: (projectId: string) => ["projects", "detail", projectId] as const
   },
   jobs: {
@@ -12,6 +12,6 @@ export const queryKeys = {
     subtitle: (clipId: string) => ["clips", "subtitle", clipId] as const
   },
   channels: {
-    byUser: (userId: string) => ["channels", userId] as const
+    all: ["channels"] as const
   }
 };

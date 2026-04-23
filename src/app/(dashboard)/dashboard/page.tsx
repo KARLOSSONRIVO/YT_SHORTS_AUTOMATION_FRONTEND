@@ -10,7 +10,7 @@ import { isProjectActive } from "@/features/projects/lib/project-status";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const projectsQuery = useProjectsQuery(user?.id ?? "");
+  const projectsQuery = useProjectsQuery(Boolean(user?.id));
   const projects = projectsQuery.data ?? [];
 
   return (

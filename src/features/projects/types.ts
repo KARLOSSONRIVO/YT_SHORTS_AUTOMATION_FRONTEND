@@ -47,11 +47,22 @@ export interface Project {
   description?: string;
   hashtags?: string;
   projectType: ProjectType;
+  facelessSource?: "topic" | "reddit_trending";
   topic?: string;
   platforms?: Array<"youtube">;
   targetDurationSeconds?: number;
   stylePreset?: string;
   voice?: string;
+  redditSource?: {
+    postId: string;
+    permalink: string;
+    title: string;
+    body: string;
+    subreddit: string;
+    author?: string;
+    score?: number;
+    fetchedAt?: string;
+  };
   status: ProjectStatus;
   workflowStage: WorkflowStage;
   subtitlePreferences?: ProjectSubtitlePreferences;

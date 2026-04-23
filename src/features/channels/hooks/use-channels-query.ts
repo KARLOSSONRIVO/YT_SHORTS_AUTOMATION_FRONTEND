@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/api/query-keys";
 import { getChannels } from "../api/get-channels";
 
-export function useChannelsQuery(userId: string) {
+export function useChannelsQuery(enabled = true) {
   return useQuery({
-    queryKey: queryKeys.channels.byUser(userId),
-    queryFn: () => getChannels(userId),
-    enabled: Boolean(userId)
+    queryKey: queryKeys.channels.all,
+    queryFn: getChannels,
+    enabled
   });
 }

@@ -5,6 +5,6 @@ import { getYoutubeOAuthUrl } from "../api/get-youtube-oauth-url";
 
 export function useYoutubeOAuthMutation() {
   return useMutation({
-    mutationFn: getYoutubeOAuthUrl
+    mutationFn: () => getYoutubeOAuthUrl()
   });
 }

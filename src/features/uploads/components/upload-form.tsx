@@ -9,20 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/features/auth/components/auth-provider";
 import { appRoutes } from "@/lib/constants/routes";
 import { useCreateUploadMutation } from "../hooks/use-create-upload";
 import { uploadVideoSchema, type UploadVideoValues } from "../schemas/upload-video-schema";
 import { UploadDropzone } from "./upload-dropzone";
 import { UploadProgressCard } from "./upload-progress-card";
 
-export function UploadForm({ userId }: { userId: string }) {
+export function UploadForm() {
   const router = useRouter();
+  const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | undefined>();
   const mutation = useCreateUploadMutation();
   const form = useForm<UploadVideoValues>({
     resolver: zodResolver(uploadVideoSchema),
     defaultValues: {
-      userId,
       title: "",
       description: "",
       hashtags: "shorts",
@@ -39,10 +40,14 @@ export function UploadForm({ userId }: { userId: string }) {
   });
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
     if (selectedFile) {
       form.setValue("video", selectedFile, { shouldValidate: true });
     }
-  }, [form, selectedFile]);
+  }, [form, selectedFile, user]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     const result = await mutation.mutateAsync(values);

@@ -133,12 +133,11 @@ function PublishedClipRow({ clip }: { clip: Clip }) {
 
 export default function PublishPage() {
   const { user } = useAuth();
-  const userId = user?.id ?? "";
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
-  const projectsQuery = useProjectsQuery(userId);
+  const projectsQuery = useProjectsQuery(Boolean(user?.id));
   const reviewProject = projectsQuery.data?.find((project) => project.status === "review") ?? projectsQuery.data?.[0];
   const clipsQuery = useProjectClipsQuery(reviewProject?.id ?? "");
-  const channelsQuery = useChannelsQuery(userId);
+  const channelsQuery = useChannelsQuery(Boolean(user?.id));
   const clips = clipsQuery.data ?? [];
   const publishableClip = clips.find(
     (clip) => clip.reviewStatus === "approved" && clip.renderStatus === "rendered" && clip.publishStatus !== "published"

@@ -2,7 +2,6 @@ import { apiUpload } from "@/lib/api/client";
 import type { UploadResponse } from "../types";
 
 export async function createUpload(input: {
-  userId: string;
   title: string;
   description?: string;
   hashtags?: string;
@@ -18,7 +17,6 @@ export async function createUpload(input: {
   video: File;
 }) {
   const formData = new FormData();
-  formData.append("userId", input.userId);
   formData.append("title", input.title);
   if (input.description) formData.append("description", input.description);
   if (input.hashtags) formData.append("hashtags", input.hashtags);

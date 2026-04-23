@@ -1,5 +1,6 @@
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 import { ApiError } from "./errors";
+import { AUTH_STORAGE_KEY } from "@/features/auth/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5001/api";
 
@@ -10,6 +11,25 @@ export function getApiBaseUrl() {
 type RequestInitWithJson = RequestInit & {
   json?: unknown;
 };
+
+export function getStoredAccessToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const storedUser = window.localStorage.getItem(AUTH_STORAGE_KEY);
+
+    if (!storedUser) {
+      return null;
+    }
+
+    const parsedUser = JSON.parse(storedUser) as { accessToken?: string };
+    return parsedUser.accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function normalizeApiData<T>(value: T): T {
   if (Array.isArray(value)) {
@@ -63,9 +83,14 @@ async function parseResponse<T>(response: Response): Promise<T> {
 
 export async function apiRequest<T>(path: string, init: RequestInitWithJson = {}) {
   const headers = new Headers(init.headers);
+  const accessToken = getStoredAccessToken();
 
   if (init.json !== undefined) {
     headers.set("Content-Type", "application/json");
+  }
+
+  if (accessToken && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -79,10 +104,50 @@ export async function apiRequest<T>(path: string, init: RequestInitWithJson = {}
 }
 
 export async function apiUpload<T>(path: string, formData: FormData) {
+  const headers = new Headers();
+  const accessToken = getStoredAccessToken();
+
+  if (accessToken) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
+    headers,
     body: formData
   });
 
   return parseResponse<T>(response);
+}
+
+export async function apiBinaryRequest(path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  const accessToken = getStoredAccessToken();
+
+  if (accessToken && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers,
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as ApiErrorResponse | null;
+    throw new ApiError({
+      message: payload?.error?.message ?? "Request failed.",
+      status: response.status,
+      code: payload?.error?.code,
+      fieldErrors:
+        typeof payload?.error?.details === "object" &&
+        payload?.error?.details !== null &&
+        "fieldErrors" in payload.error.details
+          ? (payload.error.details.fieldErrors as Record<string, string>)
+          : undefined
+    });
+  }
+
+  return response.blob();
 }

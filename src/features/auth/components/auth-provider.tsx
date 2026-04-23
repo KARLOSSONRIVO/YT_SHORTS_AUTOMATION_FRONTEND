@@ -4,9 +4,7 @@ import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { login as loginRequest } from "../api/login";
 import { register as registerRequest } from "../api/register";
-import type { AuthUser, LoginInput, RegisterInput } from "../types";
-
-const AUTH_STORAGE_KEY = "shorts-studio-user";
+import { AUTH_STORAGE_KEY, type AuthUser, type LoginInput, type RegisterInput } from "../types";
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -26,7 +24,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const storedUser = window.localStorage.getItem(AUTH_STORAGE_KEY);
       if (storedUser) {
-        setUser(JSON.parse(storedUser) as AuthUser);
+        const parsedUser = JSON.parse(storedUser) as Partial<AuthUser>;
+
+        if (parsedUser.accessToken && parsedUser.id && parsedUser.email && parsedUser.displayName) {
+          setUser(parsedUser as AuthUser);
+        } else {
+          window.localStorage.removeItem(AUTH_STORAGE_KEY);
+        }
       }
     } finally {
       setIsReady(true);

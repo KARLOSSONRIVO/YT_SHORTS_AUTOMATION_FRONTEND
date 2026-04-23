@@ -6,7 +6,6 @@ import { createFacelessProject } from "../api/create-faceless-project";
 import { runFacelessProject } from "../api/run-faceless-project";
 
 interface CreateFacelessProjectInput {
-  userId: string;
   title?: string;
   description?: string;
   topic: string;
@@ -40,7 +39,7 @@ export function useCreateFacelessProjectMutation() {
     },
     onSuccess: async ({ project }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(project.userId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.id) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.jobs.byProject(project.id) })
       ]);

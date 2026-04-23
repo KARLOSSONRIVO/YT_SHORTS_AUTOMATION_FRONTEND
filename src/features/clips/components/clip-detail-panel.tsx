@@ -18,7 +18,7 @@ import { useReviewClipMutation } from "../hooks/use-review-clip-mutation";
 export function ClipDetailPanel({ clip }: { clip?: Clip }) {
   const { user } = useAuth();
   const subtitleQuery = useClipSubtitleQuery(clip?.id);
-  const channelsQuery = useChannelsQuery(user?.id ?? "");
+  const channelsQuery = useChannelsQuery(Boolean(user?.id));
   const reviewMutation = useReviewClipMutation(clip?.projectId ?? "");
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isPublishingClip, setIsPublishingClip] = useState(false);

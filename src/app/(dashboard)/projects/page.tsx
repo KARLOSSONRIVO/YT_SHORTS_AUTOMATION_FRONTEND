@@ -7,7 +7,7 @@ import { useProjectsQuery } from "@/features/projects/hooks/use-projects-query";
 
 export default function ProjectsPage() {
   const { user } = useAuth();
-  const projectsQuery = useProjectsQuery(user?.id ?? "");
+  const projectsQuery = useProjectsQuery(Boolean(user?.id));
 
   return (
     <div className="space-y-6">
