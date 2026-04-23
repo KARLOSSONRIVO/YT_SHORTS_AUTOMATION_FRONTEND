@@ -21,11 +21,6 @@ import {
   type CreateFacelessProjectValues
 } from "../schemas/create-faceless-project-schema";
 
-const platformOptions: Array<{ value: "youtube" | "tiktok"; label: string }> = [
-  { value: "youtube", label: "YouTube Shorts" },
-  { value: "tiktok", label: "TikTok" }
-];
-
 const PREVIEW_BLOCKED_LANGUAGES = new Set(["Japanese"]);
 
 export function FacelessProjectForm({ userId }: { userId: string }) {
@@ -40,7 +35,6 @@ export function FacelessProjectForm({ userId }: { userId: string }) {
       title: "",
       description: "",
       topic: "",
-      platforms: ["youtube", "tiktok"],
       targetDurationSeconds: 45,
       stylePreset: "cinematic documentary",
       voice: "af_sarah",
@@ -50,7 +44,6 @@ export function FacelessProjectForm({ userId }: { userId: string }) {
     }
   });
 
-  const selectedPlatforms = form.watch("platforms");
   const selectedVoice = form.watch("voice");
   const allVoiceOptions = voicesQuery.isLoading
     ? []
@@ -84,14 +77,8 @@ export function FacelessProjectForm({ userId }: { userId: string }) {
     setPreviewSrc(null);
   }, [selectedVoice]);
 
-  const togglePlatform = (platform: "youtube" | "tiktok") => {
-    const current = form.getValues("platforms");
-    const next = current.includes(platform) ? current.filter((item) => item !== platform) : [...current, platform];
-    form.setValue("platforms", next, { shouldValidate: true });
-  };
-
   const onSubmit = form.handleSubmit(async (values) => {
-    const result = await mutation.mutateAsync(values);
+    const result = await mutation.mutateAsync({ ...values, platforms: ["youtube"] });
     router.push(`${appRoutes.projects}/${result.project.id}`);
   });
 
@@ -208,34 +195,6 @@ export function FacelessProjectForm({ userId }: { userId: string }) {
             <div className="space-y-2">
               <Label htmlFor="audience">Audience</Label>
               <Input id="audience" placeholder="history and mystery fans" {...form.register("audience")} />
-            </div>
-            <div className="space-y-3 md:col-span-2">
-              <Label>Target platforms</Label>
-              <div className="grid gap-3 md:grid-cols-2">
-                {platformOptions.map((platform) => {
-                  const active = selectedPlatforms.includes(platform.value);
-
-                  return (
-                    <button
-                      key={platform.value}
-                      type="button"
-                      onClick={() => togglePlatform(platform.value)}
-                      className={[
-                        "rounded-xl border px-4 py-4 text-left text-sm transition",
-                        active
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background text-muted-foreground hover:bg-accent"
-                      ].join(" ")}
-                    >
-                      <p className="font-semibold text-foreground">{platform.label}</p>
-                      <p className="mt-1 text-xs">Store platform intent on the project from the start.</p>
-                    </button>
-                  );
-                })}
-              </div>
-              {form.formState.errors.platforms ? (
-                <p className="text-sm text-rose-700">{form.formState.errors.platforms.message}</p>
-              ) : null}
             </div>
             <label className="flex items-start gap-3 rounded-xl border border-border/80 bg-background/70 px-4 py-4 md:col-span-2">
               <input

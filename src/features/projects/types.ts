@@ -48,7 +48,7 @@ export interface Project {
   hashtags?: string;
   projectType: ProjectType;
   topic?: string;
-  platforms?: Array<"youtube" | "tiktok">;
+  platforms?: Array<"youtube">;
   targetDurationSeconds?: number;
   stylePreset?: string;
   voice?: string;

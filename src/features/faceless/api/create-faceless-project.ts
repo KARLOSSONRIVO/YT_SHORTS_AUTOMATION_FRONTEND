@@ -6,7 +6,7 @@ export function createFacelessProject(input: {
   title?: string;
   description?: string;
   topic: string;
-  platforms: Array<"youtube" | "tiktok">;
+  platforms: Array<"youtube">;
   targetDurationSeconds: number;
   stylePreset: string;
   voice: string;

@@ -64,7 +64,6 @@ export function FacelessPublishPanel({ project }: { project: Project }) {
 
   const canPublish =
     project.projectType === "faceless_story" && (project.status === "completed" || project.status === "published");
-  const supportsYouTube = project.platforms?.includes("youtube") ?? true;
   const alreadyUploaded = Boolean(latestVideoUrl);
   const uploadedAtLabel = useMemo(() => {
     if (!project.publishInfo?.uploadedAt) {
@@ -103,9 +102,7 @@ export function FacelessPublishPanel({ project }: { project: Project }) {
           {successToast}
         </div>
       ) : null}
-      {!supportsYouTube ? (
-        <p className="text-sm text-muted-foreground">This project was not set up with YouTube as a target platform.</p>
-      ) : !canPublish ? (
+      {!canPublish ? (
         <p className="text-sm text-muted-foreground">
           Finish the render first, then you can pick any connected YouTube account and publish from here.
         </p>
