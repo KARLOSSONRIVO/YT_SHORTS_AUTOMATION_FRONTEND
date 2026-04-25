@@ -8,6 +8,11 @@ import { runFacelessProject } from "../api/run-faceless-project";
 interface CreateRedditStoryProjectInput {
   maxDurationSeconds?: number;
   voice: string;
+  fontFamily: string;
+  fontSize: number;
+  fillColor: string;
+  strokeColor: string;
+  highlightColor: string;
   startImmediately?: boolean;
 }
 

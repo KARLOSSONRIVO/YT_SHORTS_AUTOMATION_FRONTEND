@@ -38,6 +38,11 @@ export function RedditStoryProjectForm() {
     defaultValues: {
       maxDurationSeconds: undefined,
       voice: "af_sarah",
+      fontFamily: "Montserrat ExtraBold",
+      fontSize: 64,
+      fillColor: "#FFFFFF",
+      strokeColor: "#000000",
+      highlightColor: "#FFD54A",
       startImmediately: true
     }
   });
@@ -204,6 +209,41 @@ export function RedditStoryProjectForm() {
                 )}
                 <p className="mt-2 text-xs text-muted-foreground">
                   Japanese Kokoro voices are currently unavailable in this project.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <div className="rounded-[28px] border border-border/70 bg-background/80 p-5">
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-foreground">Subtitle style for Reddit story render</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    These settings only apply to Reddit-story subtitles and are reused on rerenders.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="fontFamily">Font family</Label>
+                    <Input id="fontFamily" placeholder="Montserrat ExtraBold" {...form.register("fontFamily")} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fontSize">Font size</Label>
+                    <Input id="fontSize" min={24} max={120} type="number" {...form.register("fontSize", { valueAsNumber: true })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fillColor">Fill color</Label>
+                    <Input id="fillColor" type="color" {...form.register("fillColor")} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="strokeColor">Stroke color</Label>
+                    <Input id="strokeColor" type="color" {...form.register("strokeColor")} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="highlightColor">Highlight color</Label>
+                    <Input id="highlightColor" type="color" {...form.register("highlightColor")} />
+                  </div>
+                </div>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Reddit-story subtitles stay in the middle and keep the single-word pacing automatically.
                 </p>
               </div>
             </div>
