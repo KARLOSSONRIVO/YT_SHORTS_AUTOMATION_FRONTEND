@@ -6,6 +6,7 @@ import { createRedditStoryProject } from "../api/create-reddit-story-project";
 import { runFacelessProject } from "../api/run-faceless-project";
 
 interface CreateRedditStoryProjectInput {
+  topic?: string;
   maxDurationSeconds?: number;
   voice: string;
   fontFamily: string;

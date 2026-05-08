@@ -24,6 +24,7 @@ import { usePublishFacelessProjectMutation } from "../hooks/use-publish-faceless
 export function FacelessPublishPanel({ project }: { project: Project }) {
   const { user } = useAuth();
   const channelsQuery = useChannelsQuery(Boolean(user?.id));
+  const channels = useMemo(() => channelsQuery.data ?? [], [channelsQuery.data]);
   const mutation = usePublishFacelessProjectMutation(project.id);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [latestVideoUrl, setLatestVideoUrl] = useState<string | null>(project.publishInfo?.videoUrl ?? null);
@@ -39,10 +40,10 @@ export function FacelessPublishPanel({ project }: { project: Project }) {
   });
 
   useEffect(() => {
-    if (!form.getValues("channelId") && channelsQuery.data?.length) {
-      form.setValue("channelId", channelsQuery.data[0].id, { shouldValidate: true });
+    if (!form.getValues("channelId") && channels.length) {
+      form.setValue("channelId", channels[0].id, { shouldValidate: true });
     }
-  }, [channelsQuery.data, form]);
+  }, [channels, form]);
 
   useEffect(() => {
     setLatestVideoUrl(project.publishInfo?.videoUrl ?? null);
@@ -124,7 +125,7 @@ export function FacelessPublishPanel({ project }: { project: Project }) {
             <Label htmlFor="faceless-channelId">Channel</Label>
             <Select id="faceless-channelId" {...form.register("channelId")}>
               <option value="">Select a channel</option>
-              {(channelsQuery.data ?? []).map((channel) => (
+              {channels.map((channel) => (
                 <option key={channel.id} value={channel.id}>
                   {channel.title} ({channel.externalChannelId})
                 </option>
@@ -154,10 +155,10 @@ export function FacelessPublishPanel({ project }: { project: Project }) {
               <option value="public">Public</option>
             </Select>
           </div>
-          <Button className="w-full" disabled={alreadyUploaded || mutation.isPending || !(channelsQuery.data?.length)} type="submit">
+          <Button className="w-full" disabled={alreadyUploaded || mutation.isPending || !channels.length} type="submit">
             {alreadyUploaded ? "Already uploaded" : mutation.isPending ? "Publishing..." : "Publish to YouTube"}
           </Button>
-          {!channelsQuery.data?.length ? (
+          {!channels.length ? (
             <p className="text-sm text-muted-foreground">
               Connect at least one YouTube account in Settings, then it will show up here for switching.
             </p>

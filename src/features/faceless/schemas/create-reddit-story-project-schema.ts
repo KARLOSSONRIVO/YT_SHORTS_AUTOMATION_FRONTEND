@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 export const createRedditStoryProjectSchema = z.object({
+  topic: z
+    .string()
+    .trim()
+    .max(80, "Topic must be 80 characters or less")
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : undefined)),
   maxDurationSeconds: z
     .number()
     .int()

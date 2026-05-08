@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useYoutubeOAuthMutation } from "../hooks/use-youtube-oauth";
+import { useChannelOAuthMutation } from "../hooks/use-youtube-oauth";
 
 export function ConnectChannelButton() {
-  const mutation = useYoutubeOAuthMutation();
+  const mutation = useChannelOAuthMutation();
 
   return (
     <Button

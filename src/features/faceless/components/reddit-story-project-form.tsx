@@ -36,6 +36,7 @@ export function RedditStoryProjectForm() {
   const form = useForm<CreateRedditStoryProjectValues>({
     resolver: zodResolver(createRedditStoryProjectSchema),
     defaultValues: {
+      topic: "",
       maxDurationSeconds: undefined,
       voice: "af_sarah",
       fontFamily: "Montserrat ExtraBold",
@@ -152,6 +153,17 @@ export function RedditStoryProjectForm() {
           {formError ? <InlineError title="Reddit story did not start" message={formError} /> : null}
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="topic">Story topic</Label>
+              <Input
+                id="topic"
+                placeholder="Optional, like basketball, cheating, or family drama"
+                {...form.register("topic")}
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave this blank to use the default trending Reddit story feed. Add a topic to find the highest-rated fresh Reddit story around that topic.
+              </p>
+            </div>
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="maxDurationSeconds">Max duration cap</Label>
               <Input
                 id="maxDurationSeconds"
@@ -164,7 +176,7 @@ export function RedditStoryProjectForm() {
                 })}
               />
               <p className="text-xs text-muted-foreground">
-                Optional. Leave this blank if you want the story itself to determine the length.
+                Optional. Leave this blank to keep the full story length. We already skip Reddit stories that would run longer than 3 minutes.
               </p>
             </div>
             <div className="space-y-2 md:col-span-2">
@@ -274,16 +286,17 @@ export function RedditStoryProjectForm() {
       <div className="space-y-6">
         <SectionCard title="What happens next">
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>Fetch the highest-ranked fresh Reddit self-post from the built-in story feed.</li>
+            <li>If you enter a topic, we search Reddit for the highest-ranked fresh story around it. If you leave it blank, we use the built-in story feed.</li>
             <li>Skip any story that already exists in the database and move to the next best candidate.</li>
-            <li>Use the story itself to drive pacing, only trimming when it would run past your optional max cap.</li>
+            <li>Skip any Reddit story that would run longer than 3 minutes, then move to the next best match.</li>
             <li>Use the Reddit post title as both the project title and the default YouTube title.</li>
           </ul>
         </SectionCard>
         <SectionCard title="Good starting inputs">
           <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>We automatically search story-heavy subreddits like AskReddit, tifu, confession, and offmychest.</li>
-            <li>Use the duration cap only when you want to keep long posts from running too far.</li>
+            <li>Good topic examples are things like basketball, breakup, cheating, or job interview.</li>
+            <li>When topic is blank, we automatically search story-heavy subreddits like AskReddit, tifu, confession, and offmychest.</li>
+            <li>Use the duration cap only when you want something stricter than the automatic long-story skip.</li>
             <li>Pick a voice first, then preview it to make sure the pacing fits the story tone.</li>
           </ul>
         </SectionCard>

@@ -1,18 +1,20 @@
- "use client";
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
 import { SectionCard } from "@/components/common/section-card";
 import type { Channel } from "../types";
 import { useDisconnectChannelMutation } from "../hooks/use-disconnect-channel-mutation";
+import { ConnectChannelButton } from "./connect-channel-button";
 
 export function ChannelStatusCard({ channels }: { channels: Channel[] }) {
   const disconnectMutation = useDisconnectChannelMutation();
 
   return (
     <SectionCard
-      title="Channel connections"
-      description="Every connected account is saved in the database, so you can switch channels at publish time without reconnecting each time."
+      title="YouTube channels"
+      description="Saved YouTube channels you can publish to without reconnecting every time."
+      action={<ConnectChannelButton />}
     >
       {channels.length ? (
         <div className="space-y-3">
@@ -41,7 +43,7 @@ export function ChannelStatusCard({ channels }: { channels: Channel[] }) {
                 {channel.tokenExpiryDate
                   ? `Token expires at ${new Date(channel.tokenExpiryDate).toLocaleString()}.`
                   : channel.status === "disconnected"
-                    ? "This account has been disconnected. Reconnect it anytime from Google OAuth."
+                    ? "This channel has been disconnected. Reconnect it anytime from OAuth."
                     : "Token expiry is not currently exposed."}
               </p>
             </div>

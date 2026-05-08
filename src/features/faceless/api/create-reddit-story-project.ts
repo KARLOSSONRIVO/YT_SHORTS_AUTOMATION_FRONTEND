@@ -2,6 +2,7 @@ import { apiRequest } from "@/lib/api/client";
 import type { Project } from "@/features/projects/types";
 
 export function createRedditStoryProject(input: {
+  topic?: string;
   maxDurationSeconds?: number;
   voice: string;
   fontFamily: string;
@@ -13,6 +14,7 @@ export function createRedditStoryProject(input: {
   return apiRequest<Project>("/projects/reddit/trending", {
     method: "POST",
     json: {
+      topic: input.topic,
       maxDurationSeconds: input.maxDurationSeconds,
       voice: input.voice,
       subtitlePreferences: {
