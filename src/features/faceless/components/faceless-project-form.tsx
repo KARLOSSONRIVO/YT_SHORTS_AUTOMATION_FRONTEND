@@ -39,6 +39,7 @@ export function FacelessProjectForm() {
       topic: "",
       targetDurationSeconds: 45,
       stylePreset: "cinematic documentary",
+      facelessRenderMode: "image_story",
       voice: "af_sarah",
       tone: "mysterious and cinematic",
       audience: "curious viewers who enjoy myth and history",
@@ -231,6 +232,16 @@ export function FacelessProjectForm() {
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="stylePreset">Visual style</Label>
               <Input id="stylePreset" placeholder="cinematic documentary" {...form.register("stylePreset")} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="facelessRenderMode">Story format</Label>
+              <Select id="facelessRenderMode" {...form.register("facelessRenderMode")}>
+                <option value="image_story">Image story</option>
+                <option value="animation_story">Animation story</option>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Image story uses generated scene images. Animation story sends those images to a Hugging Face image-to-video model before rendering.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="tone">Tone</Label>

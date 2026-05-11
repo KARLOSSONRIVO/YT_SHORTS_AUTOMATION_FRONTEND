@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type { ProjectType, WorkflowStage } from "../types";
 
 const uploadedVideoStages: WorkflowStage[] = ["ingest", "transcription", "analysis", "render", "review", "publish", "completed"];
-const facelessStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "scenes", "render", "completed"];
+const facelessStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "scenes", "animations", "ambience", "render", "completed"];
 
 export function WorkflowStageStepper({
   currentStage,

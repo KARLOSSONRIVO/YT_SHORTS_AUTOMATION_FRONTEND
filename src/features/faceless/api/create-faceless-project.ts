@@ -8,6 +8,7 @@ export function createFacelessProject(input: {
   platforms: Array<"youtube">;
   targetDurationSeconds: number;
   stylePreset: string;
+  facelessRenderMode?: "image_story" | "animation_story";
   voice: string;
   tone?: string;
   audience?: string;

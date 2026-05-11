@@ -24,6 +24,8 @@ export type WorkflowStage =
   | "audio"
   | "subtitles"
   | "scenes"
+  | "animations"
+  | "ambience"
   | "render"
   | "review"
   | "publish"
@@ -52,6 +54,7 @@ export interface Project {
   platforms?: Array<"youtube">;
   targetDurationSeconds?: number;
   stylePreset?: string;
+  facelessRenderMode?: "image_story" | "animation_story";
   voice?: string;
   redditSource?: {
     postId: string;
