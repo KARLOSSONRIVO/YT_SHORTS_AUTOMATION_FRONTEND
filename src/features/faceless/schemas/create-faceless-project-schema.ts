@@ -6,6 +6,7 @@ export const createFacelessProjectSchema = z.object({
   topic: z.string().min(2, "Topic must be at least 2 characters").max(240),
   targetDurationSeconds: z.coerce.number().int().min(15).max(180),
   stylePreset: z.string().min(1, "Style preset is required").max(160),
+  scriptFramework: z.enum(["psychology_truth", "history_story"]).default("psychology_truth"),
   facelessRenderMode: z.enum(["image_story", "animation_story"]).default("image_story"),
   voice: z.string().min(1, "Voice is required").max(80),
   tone: z.string().max(80).optional(),

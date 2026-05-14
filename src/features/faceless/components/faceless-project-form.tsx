@@ -39,6 +39,7 @@ export function FacelessProjectForm() {
       topic: "",
       targetDurationSeconds: 45,
       stylePreset: "cinematic documentary",
+      scriptFramework: "psychology_truth",
       facelessRenderMode: "image_story",
       voice: "af_sarah",
       tone: "mysterious and cinematic",
@@ -48,6 +49,7 @@ export function FacelessProjectForm() {
   });
 
   const selectedVoice = form.watch("voice");
+  const selectedScriptFramework = form.watch("scriptFramework");
   const allVoiceOptions = voicesQuery.isLoading
     ? []
     : voicesQuery.data?.length
@@ -241,6 +243,18 @@ export function FacelessProjectForm() {
               </Select>
               <p className="text-xs text-muted-foreground">
                 Image story uses generated scene images. Animation story sends those images to a Hugging Face image-to-video model before rendering.
+              </p>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Script formula</Label>
+              <Select id="scriptFramework" {...form.register("scriptFramework")}>
+                <option value="psychology_truth">Psychology formula</option>
+                <option value="history_story">History formula</option>
+              </Select>
+              <p className="rounded-xl border border-border/80 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                {selectedScriptFramework === "history_story"
+                  ? "History formula opens with a curiosity hook, sets the historical context, escalates the event, lands the turning point, shows the consequence, and closes on why it still matters."
+                  : "Psychology formula opens with a sharp hook, sets the conflict, drops a truth bomb, explains the pattern, gives a practical shift, and ends with a closing punch."}
               </p>
             </div>
             <div className="space-y-2">

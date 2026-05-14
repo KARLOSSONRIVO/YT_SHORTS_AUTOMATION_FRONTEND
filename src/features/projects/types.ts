@@ -54,6 +54,7 @@ export interface Project {
   platforms?: Array<"youtube">;
   targetDurationSeconds?: number;
   stylePreset?: string;
+  scriptFramework?: "psychology_truth" | "history_story";
   facelessRenderMode?: "image_story" | "animation_story";
   voice?: string;
   redditSource?: {
