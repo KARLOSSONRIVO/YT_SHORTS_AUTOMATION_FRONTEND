@@ -9,16 +9,18 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(15,23,42,0.08),_transparent_30%)]" />
-      <div className="absolute inset-0 -z-10 bg-dashboard-grid bg-[size:36px_36px] opacity-30" />
-      <div className="mx-auto flex min-h-screen max-w-[1600px] gap-6 px-4 py-6 lg:px-6">
-        <SidebarNav pathname={pathname} />
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <Topbar />
-          <main className="flex-1">{children}</main>
+    <div className="min-h-screen bg-background text-on-surface selection:bg-primary/30 overflow-x-hidden">
+      <SidebarNav pathname={pathname} />
+      
+      {/* Main Content Area */}
+      <main className="ml-[280px] min-h-screen">
+        <Topbar />
+        
+        {/* Content Canvas */}
+        <div className="p-10 max-w-[1400px] mx-auto">
+          {children}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

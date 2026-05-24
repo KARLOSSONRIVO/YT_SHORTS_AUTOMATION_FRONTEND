@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Sora, Geist } from "next/font/google";
 import { AppProviders } from "./providers";
 import "./globals.css";
 
-const manrope = Manrope({
+const geist = Geist({
   subsets: ["latin"],
   variable: "--font-body"
 });
 
-const spaceGrotesk = Space_Grotesk({
+const sora = Sora({
   subsets: ["latin"],
   variable: "--font-heading"
 });
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} ${spaceGrotesk.variable} min-h-screen bg-background font-body text-foreground antialiased`}>
+      <body className={`${geist.variable} ${sora.variable} min-h-screen bg-background font-body text-foreground antialiased`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

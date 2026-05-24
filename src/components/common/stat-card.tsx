@@ -1,21 +1,34 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { ReactNode } from "react";
+import { Folder } from "lucide-react";
 
 export function StatCard({
   label,
   value,
-  hint
+  hint,
+  icon: Icon = Folder
 }: {
   label: string;
   value: string;
   hint?: string;
+  icon?: any;
 }) {
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-5">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{value}</p>
-        {hint ? <p className="mt-2 text-sm text-muted-foreground">{hint}</p> : null}
-      </CardContent>
-    </Card>
+    <div className="bg-card p-6 rounded-xl flex flex-col gap-2 border border-border/40 relative overflow-hidden group hover:border-border transition-all">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-all duration-500"></div>
+      
+      <span className="text-muted-foreground font-body text-xs font-semibold uppercase tracking-wider flex items-center gap-2">
+        <Icon className="h-4 w-4" />
+        {label}
+      </span>
+      
+      <div className="flex items-baseline gap-4 mt-2">
+        <span className="font-heading text-4xl font-bold text-primary">{value}</span>
+        {hint && (
+          <span className="text-muted-foreground text-xs">
+            {hint}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }

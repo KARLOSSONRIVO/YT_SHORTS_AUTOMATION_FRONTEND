@@ -4,24 +4,26 @@
 
 @layer base {
   :root {
-    --background: 42 33% 97%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 20 91% 48%;
-    --primary-foreground: 40 100% 97%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 36 24% 92%;
-    --muted-foreground: 215 16% 38%;
-    --accent: 34 71% 92%;
-    --accent-foreground: 222 47% 11%;
+    --background: 218 29% 6%;
+    --foreground: 0 0% 100%;
+    --card: 217 24% 11%;
+    --card-foreground: 0 0% 100%;
+    --popover: 217 24% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 37 76% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 219 25% 16%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 218 11% 33%;
+    --muted-foreground: 218 15% 65%;
+    --accent: 187 100% 50%;
+    --accent-foreground: 218 29% 6%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 28 23% 84%;
-    --input: 28 23% 84%;
-    --ring: 20 91% 48%;
-    --radius: 1.5rem;
+    --border: 219 25% 16%;
+    --input: 217 24% 11%;
+    --ring: 37 76% 53%;
+    --radius: 1rem;
   }
 
   * {
@@ -44,5 +46,13 @@
 
   .font-body {
     font-family: var(--font-body), sans-serif;
+  }
+  
+  .neon-glow-primary {
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.4);
+  }
+  
+  .neon-glow-accent:focus-within {
+    box-shadow: 0 0 10px hsl(var(--accent) / 0.3);
   }
 }

@@ -1,49 +1,55 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Clock, MoreVertical, PlayCircle } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatRelativeDate } from "@/lib/utils/format";
 import { getProjectTone, getProjectTypeLabel } from "../lib/project-status";
 import type { Project } from "../types";
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
-    <Link href={`/projects/${project.id}`} className="block transition hover:-translate-y-0.5">
-      <Card className="h-full">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-3">
-              <Badge variant="outline" className="rounded-full px-3 py-1">
-                {getProjectTypeLabel(project.projectType)}
-              </Badge>
-              <CardTitle className="font-heading">{project.title}</CardTitle>
-            </div>
-            <StatusBadge tone={getProjectTone(project.status)}>{project.status}</StatusBadge>
+    <Link href={`/projects/${project.id}`} className="block group">
+      <div className="bg-card p-5 rounded-xl border border-border/40 hover:border-border transition-all duration-300 h-full flex flex-col hover:bg-secondary/20 relative overflow-hidden">
+        {/* Glow effect on hover */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/20 transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
+        
+        <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
+          <div className="space-y-2">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+              {getProjectTypeLabel(project.projectType)}
+            </span>
+            <h4 className="font-heading text-lg font-bold text-foreground line-clamp-1">{project.title}</h4>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {project.description || "No internal description yet."}
-          </p>
-          <div className="flex items-center justify-between text-sm">
-            <div>
-              <p className="text-muted-foreground">Stage</p>
-              <p className="font-medium capitalize text-foreground">{project.workflowStage}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-muted-foreground">Updated</p>
-              <p className="font-medium text-foreground">
-                {project.updatedAt ? formatRelativeDate(project.updatedAt) : "Just now"}
-              </p>
-            </div>
+          <StatusBadge tone={getProjectTone(project.status)}>{project.status}</StatusBadge>
+        </div>
+        
+        <p className="line-clamp-2 text-sm text-muted-foreground flex-grow mb-6 relative z-10">
+          {project.description || "No internal description yet."}
+        </p>
+        
+        <div className="mt-auto relative z-10 space-y-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {project.updatedAt ? formatRelativeDate(project.updatedAt) : "Just now"}
+            </span>
+            <span className="font-medium capitalize text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+              {project.workflowStage}
+            </span>
           </div>
-          <div className="flex items-center justify-between text-sm font-medium text-primary">
-            <span>Open project</span>
-            <ArrowRight className="h-4 w-4" />
+          
+          {/* Progress Bar Mockup */}
+          <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
+             <div className="h-full bg-primary w-[30%]" style={{ boxShadow: "0 0 8px hsl(var(--primary)/0.6)" }}></div>
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="flex items-center justify-between text-sm font-medium text-primary pt-2">
+            <span className="flex items-center gap-1 group-hover:underline">
+              Open workspace
+            </span>
+            <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }

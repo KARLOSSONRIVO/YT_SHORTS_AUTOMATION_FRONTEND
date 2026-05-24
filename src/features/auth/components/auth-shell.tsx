@@ -18,50 +18,68 @@ export function AuthShell({
   footerLinkText: string;
 }) {
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="hidden rounded-[36px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,247,237,0.96),rgba(255,255,255,0.9))] p-10 shadow-soft lg:flex lg:flex-col lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">Shorts Studio</p>
-            <h1 className="mt-6 font-heading text-5xl font-semibold tracking-tight text-foreground">
-              Review faster. Publish cleaner.
-            </h1>
-            <p className="mt-4 max-w-xl text-base text-muted-foreground">
-              A focused control room for long-form uploads, AI clip generation, review workflows, and YouTube publishing.
-            </p>
+    <div className="min-h-screen bg-surface-base text-on-surface font-body overflow-x-hidden selection:bg-primary selection:text-white flex flex-col md:flex-row">
+      <section className="hidden md:flex flex-1 relative flex-col justify-between p-10 bg-surface-base overflow-hidden">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary blur-[120px]"></div>
+          <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full bg-accent blur-[100px]"></div>
+        </div>
+        <div className="relative z-10">
+          <span className="font-heading tracking-widest text-primary uppercase mb-6 block font-semibold text-xs">STUDIO PRO</span>
+          <h1 className="font-heading text-5xl font-bold text-white max-w-xl mb-4">Review faster. Publish cleaner.</h1>
+          <p className="font-body text-lg text-muted-foreground max-w-lg">
+            A focused control room for long-form uploads, AI clip generation, review workflows, and YouTube publishing.
+          </p>
+        </div>
+        <div className="relative z-10 grid grid-cols-3 gap-4">
+          <div className="bg-card p-6 rounded-xl transition-all hover:bg-secondary group cursor-default">
+            <span className="material-symbols-outlined text-accent mb-2 block">cloud_upload</span>
+            <h3 className="font-heading font-semibold text-white text-base mb-1">Upload</h3>
+            <p className="font-body text-sm text-muted-foreground">High-speed ingestion for long-form raw assets.</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-[28px] border border-border/80 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-foreground">Upload</p>
-              <p className="mt-2 text-sm text-muted-foreground">Start a project from a source video and track each processing stage.</p>
-            </div>
-            <div className="rounded-[28px] border border-border/80 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-foreground">Review</p>
-              <p className="mt-2 text-sm text-muted-foreground">Approve or reject clips in a fast two-pane workspace.</p>
-            </div>
-            <div className="rounded-[28px] border border-border/80 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-foreground">Publish</p>
-              <p className="mt-2 text-sm text-muted-foreground">Connect a YouTube channel and queue Shorts with confidence.</p>
-            </div>
+          <div className="bg-card p-6 rounded-xl transition-all hover:bg-secondary group cursor-default">
+            <span className="material-symbols-outlined text-primary mb-2 block">rate_review</span>
+            <h3 className="font-heading font-semibold text-white text-base mb-1">Review</h3>
+            <p className="font-body text-sm text-muted-foreground">Frame-accurate feedback for creative teams.</p>
+          </div>
+          <div className="bg-card p-6 rounded-xl transition-all hover:bg-secondary group cursor-default">
+            <span className="material-symbols-outlined text-ring mb-2 block">send</span>
+            <h3 className="font-heading font-semibold text-white text-base mb-1">Publish</h3>
+            <p className="font-body text-sm text-muted-foreground">One-click distribution to global platforms.</p>
           </div>
         </div>
-        <div className="flex items-center justify-center">
-          <div className="w-full max-w-xl rounded-[36px] border border-border/70 bg-card/95 p-8 shadow-soft sm:p-10">
-            <Link href={appRoutes.login} className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
-              Shorts Studio
-            </Link>
-            <h2 className="mt-5 font-heading text-3xl font-semibold tracking-tight text-foreground">{title}</h2>
-            <p className="mt-3 text-sm text-muted-foreground">{description}</p>
-            <div className="mt-8">{children}</div>
-            <p className="mt-6 text-sm text-muted-foreground">
-              {footerLabel}{" "}
-              <Link className="font-semibold text-primary" href={footerHref}>
-                {footerLinkText}
-              </Link>
-            </p>
+      </section>
+      
+      <section className="flex-1 flex items-center justify-center p-6 md:p-10 bg-background">
+        <div className="w-full max-w-[440px]">
+          <div className="bg-card p-10 rounded-xl shadow-2xl border border-border/10">
+            <div className="mb-10">
+              <span className="font-heading font-semibold text-xs tracking-widest text-primary uppercase mb-2 block">STUDIO PRO</span>
+              <h2 className="font-heading text-3xl font-bold text-white mb-2">{title}</h2>
+              <p className="font-body text-base text-muted-foreground">{description}</p>
+            </div>
+            
+            {children}
+            
+            <div className="mt-10 text-center">
+              <p className="font-body text-sm text-muted-foreground">
+                {footerLabel}{" "}
+                <Link className="text-accent font-bold hover:underline ml-1 transition-colors" href={footerHref}>
+                  {footerLinkText}
+                </Link>
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-10 flex justify-center items-center gap-6">
+            <nav className="flex gap-4">
+              <a className="font-heading font-semibold text-xs text-muted-foreground hover:text-white transition-colors" href="#">Terms</a>
+              <a className="font-heading font-semibold text-xs text-muted-foreground hover:text-white transition-colors" href="#">Privacy</a>
+              <a className="font-heading font-semibold text-xs text-muted-foreground hover:text-white transition-colors" href="#">Help</a>
+            </nav>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
