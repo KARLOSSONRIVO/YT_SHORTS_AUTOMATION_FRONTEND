@@ -3,15 +3,23 @@ import type { ProjectType, WorkflowStage } from "../types";
 
 const uploadedVideoStages: WorkflowStage[] = ["ingest", "transcription", "analysis", "render", "review", "publish", "completed"];
 const facelessStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "scenes", "animations", "ambience", "render", "completed"];
+const facelessAnimationStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "animations", "ambience", "render", "completed"];
 
 export function WorkflowStageStepper({
   currentStage,
-  projectType
+  projectType,
+  facelessRenderMode
 }: {
   currentStage: WorkflowStage;
   projectType: ProjectType;
+  facelessRenderMode?: "image_story" | "animation_story";
 }) {
-  const stages = projectType === "faceless_story" ? facelessStages : uploadedVideoStages;
+  const stages =
+    projectType === "faceless_story"
+      ? facelessRenderMode === "animation_story"
+        ? facelessAnimationStages
+        : facelessStages
+      : uploadedVideoStages;
   const activeIndex = stages.indexOf(currentStage);
 
   return (

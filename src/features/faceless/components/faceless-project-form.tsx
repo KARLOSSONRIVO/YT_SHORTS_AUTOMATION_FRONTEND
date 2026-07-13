@@ -242,7 +242,7 @@ export function FacelessProjectForm() {
                 <option value="animation_story">Animation story</option>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Image story uses generated scene images. Animation story sends those images to a Hugging Face image-to-video model before rendering.
+                Image story uses generated scene images. Animation story sends the story scenes to a Hugging Face text-to-video model before rendering.
               </p>
             </div>
             <div className="space-y-2 md:col-span-2">

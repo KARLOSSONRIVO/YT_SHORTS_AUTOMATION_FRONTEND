@@ -12,7 +12,11 @@ export function ProjectProgressPanel({ project }: { project: Project }) {
           : "This card is the project-level summary. Keep it readable and let the job timeline carry the deeper execution detail."
       }
     >
-      <WorkflowStageStepper currentStage={project.workflowStage} projectType={project.projectType} />
+      <WorkflowStageStepper
+        currentStage={project.workflowStage}
+        projectType={project.projectType}
+        facelessRenderMode={project.facelessRenderMode}
+      />
     </SectionCard>
   );
 }
