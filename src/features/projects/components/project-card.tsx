@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
-import { StatusBadge } from "@/components/common/status-badge";
 import { formatRelativeDate } from "@/lib/utils/format";
-import { getProjectTone, getProjectTypeLabel } from "../lib/project-status";
+import { getProjectTypeLabel } from "../lib/project-status";
 import type { Project } from "../types";
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -12,37 +11,28 @@ export function ProjectCard({ project }: { project: Project }) {
         {/* Glow effect on hover */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-primary/20 transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
         
-        <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
+        <div className="mb-4 relative z-10">
           <div className="space-y-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
           {getProjectTypeLabel(project.projectType, project.contentType)}
             </span>
             <h4 className="font-heading text-lg font-bold text-foreground line-clamp-1">{project.title}</h4>
           </div>
-          <StatusBadge tone={getProjectTone(project.status)}>{project.status}</StatusBadge>
         </div>
         
         <p className="line-clamp-2 text-sm text-muted-foreground flex-grow mb-6 relative z-10">
           {project.description || "No internal description yet."}
         </p>
         
-        <div className="mt-auto relative z-10 space-y-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="mt-auto relative z-10 space-y-3">
+          <div className="flex items-center text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {project.updatedAt ? formatRelativeDate(project.updatedAt) : "Just now"}
             </span>
-            <span className="font-medium capitalize text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-              {project.workflowStage}
-            </span>
           </div>
-          
-          {/* Progress Bar Mockup */}
-          <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-             <div className="h-full bg-primary w-[30%]" style={{ boxShadow: "0 0 8px hsl(var(--primary)/0.6)" }}></div>
-          </div>
-          
-          <div className="flex items-center justify-between text-sm font-medium text-primary pt-2">
+
+          <div className="flex items-center justify-between text-sm font-medium text-primary pt-1">
             <span className="flex items-center gap-1 group-hover:underline">
               Open workspace
             </span>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionCard } from "@/components/common/section-card";
 import { useAuth } from "@/features/auth/components/auth-provider";
@@ -9,7 +10,9 @@ import { useChannelsQuery } from "@/features/channels/hooks/use-channels-query";
 import { useProjectClipsQuery } from "@/features/clips/hooks/use-project-clips-query";
 import type { Clip } from "@/features/clips/types";
 import { PublishForm } from "@/features/publishing/components/publish-form";
-import { useProjectDetailQuery } from "@/features/projects/hooks/use-project-detail-query";
+import { getProjectStories } from "@/features/automation/api";
+import type { Story } from "@/features/automation/types";
+import { publishedFacelessStories } from "@/features/publishing/lib/published-stories";
 import { useProjectsQuery } from "@/features/projects/hooks/use-projects-query";
 import type { Project } from "@/features/projects/types";
 
@@ -23,16 +26,23 @@ function PublishedProjectCard({
   onToggle: () => void;
 }) {
   const clipsQuery = useProjectClipsQuery(project.projectType === "uploaded_video" ? project.id : "");
-  const projectDetailQuery = useProjectDetailQuery(project.projectType === "faceless_story" ? project.id : "");
+  const storiesQuery = useQuery({
+    queryKey: ["project-stories", project.id],
+    queryFn: () => getProjectStories(project.id),
+    enabled: project.projectType === "faceless_story"
+  });
 
   const publishedClips = useMemo(
     () => (project.projectType === "uploaded_video" ? (clipsQuery.data ?? []).filter((clip) => clip.publishStatus === "published") : []),
     [clipsQuery.data, project.projectType]
   );
-  const facelessPublishInfo = project.projectType === "faceless_story" ? projectDetailQuery.data?.publishInfo : null;
+  const publishedStories = useMemo(
+    () => (project.projectType === "faceless_story" ? publishedFacelessStories(storiesQuery.data ?? []) : []),
+    [project.projectType, storiesQuery.data]
+  );
 
   const hasPublishedItems =
-    publishedClips.length > 0 || Boolean(facelessPublishInfo?.youtubeVideoId || facelessPublishInfo?.videoUrl);
+    publishedClips.length > 0 || publishedStories.length > 0;
 
   if (!hasPublishedItems) {
     return null;
@@ -51,7 +61,9 @@ function PublishedProjectCard({
               {project.projectType === "faceless_story" ? "Faceless" : "Clipping"}
             </span>
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-              {project.projectType === "faceless_story" ? "1 published video" : `${publishedClips.length} published clip${publishedClips.length === 1 ? "" : "s"}`}
+              {project.projectType === "faceless_story"
+                ? `${publishedStories.length} published video${publishedStories.length === 1 ? "" : "s"}`
+                : `${publishedClips.length} published clip${publishedClips.length === 1 ? "" : "s"}`}
             </span>
           </div>
           <p className="text-lg font-semibold text-foreground">{project.title}</p>
@@ -70,32 +82,42 @@ function PublishedProjectCard({
                 <PublishedClipRow key={clip.id} clip={clip} />
               ))}
             </div>
-          ) : facelessPublishInfo ? (
-            <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium text-foreground">{facelessPublishInfo.title ?? project.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {facelessPublishInfo.uploadedAt
-                      ? `Published ${new Date(facelessPublishInfo.uploadedAt).toLocaleString()}`
-                      : "Published to YouTube"}
-                  </p>
-                </div>
-                {facelessPublishInfo.videoUrl ? (
-                  <Link
-                    className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-                    href={facelessPublishInfo.videoUrl}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    Open on YouTube
-                  </Link>
-                ) : null}
-              </div>
+          ) : (
+            <div className="space-y-3">
+              {publishedStories.map((story) => (
+                <PublishedStoryRow key={story.id} story={story} />
+              ))}
             </div>
-          ) : null}
+          )}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function PublishedStoryRow({ story }: { story: Story }) {
+  const videoUrl = story.platformUrl ?? (story.platformVideoId ? `https://www.youtube.com/watch?v=${story.platformVideoId}` : undefined);
+
+  return (
+    <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <p className="font-medium text-foreground">{story.title}</p>
+          <p className="text-sm text-muted-foreground">
+            Published {story.scheduledUploadTime ? new Date(story.scheduledUploadTime).toLocaleString() : "to YouTube"}
+          </p>
+        </div>
+        {videoUrl ? (
+          <Link
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            href={videoUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Open on YouTube
+          </Link>
+        ) : null}
+      </div>
     </div>
   );
 }

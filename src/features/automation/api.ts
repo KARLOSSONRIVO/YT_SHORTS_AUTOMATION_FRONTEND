@@ -7,6 +7,7 @@ export const createAutomationProject = (input:ProjectInput) => apiRequest<Projec
 export const updateAutomationProject = (id:string,input:Partial<ProjectInput>) => apiRequest<ProjectAutomation>(`/projects/${id}`, {method:"PATCH",json:input});
 export const getAutomationProject = (id:string) => apiRequest<ProjectAutomation>(`/projects/${id}`);
 export const getProjectDashboard = (id:string) => apiRequest<ProjectDashboardData>(`/projects/${id}/dashboard`);
+export const getProjectStories = (id:string) => apiRequest<Story[]>(`/projects/${id}/stories`);
 export const generateNow = (id:string) => apiRequest<{jobId:string;status:string}>(`/projects/${id}/generate-now`,{method:"POST"});
 export const pauseAutomation = (id:string) => apiRequest<ProjectAutomation>(`/projects/${id}/pause`,{method:"POST"});
 export const resumeAutomation = (id:string) => apiRequest<ProjectAutomation>(`/projects/${id}/resume`,{method:"POST"});
