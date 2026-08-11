@@ -134,7 +134,7 @@ export function PublishForm({
         <Label htmlFor="hashtags">Hashtags</Label>
         <Input id="hashtags" placeholder="shorts, ocean, story" {...form.register("hashtags")} />
         <p className="text-xs text-muted-foreground">
-          Separate tags with commas or spaces. We'll format them as #hashtags on publish.
+          Separate tags with commas or spaces. We&apos;ll format them as #hashtags on publish.
         </p>
       </div>
       <div className="space-y-2">

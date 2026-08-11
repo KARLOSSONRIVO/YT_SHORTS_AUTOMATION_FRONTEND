@@ -8,9 +8,9 @@ export function ProjectList({ projects }: { projects: Project[] }) {
     return (
       <EmptyState
         title="No projects yet"
-        description="Start with either a long-form source upload for clipping or a topic-led faceless story project."
-        ctaHref={appRoutes.uploadsNew}
-        ctaLabel="New Project"
+        description="Choose a niche and YouTube account to create one unique 60-second faceless story each day."
+        ctaHref={appRoutes.createProject}
+        ctaLabel="Create Project"
       />
     );
   }

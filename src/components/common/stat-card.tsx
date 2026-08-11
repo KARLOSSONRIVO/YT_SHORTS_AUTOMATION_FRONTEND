@@ -1,5 +1,4 @@
-import { ReactNode } from "react";
-import { Folder } from "lucide-react";
+import { Folder, type LucideIcon } from "lucide-react";
 
 export function StatCard({
   label,
@@ -10,7 +9,7 @@ export function StatCard({
   label: string;
   value: string;
   hint?: string;
-  icon?: any;
+  icon?: LucideIcon;
 }) {
   return (
     <div className="bg-card p-6 rounded-xl flex flex-col gap-2 border border-border/40 relative overflow-hidden group hover:border-border transition-all">

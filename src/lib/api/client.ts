@@ -103,7 +103,7 @@ export async function apiRequest<T>(path: string, init: RequestInitWithJson = {}
   return parseResponse<T>(response);
 }
 
-export async function apiUpload<T>(path: string, formData: FormData) {
+export async function apiUpload<T>(path: string, formData: FormData, method: "POST" | "PUT" = "POST") {
   const headers = new Headers();
   const accessToken = getStoredAccessToken();
 
@@ -112,7 +112,7 @@ export async function apiUpload<T>(path: string, formData: FormData) {
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "POST",
+    method,
     headers,
     body: formData
   });

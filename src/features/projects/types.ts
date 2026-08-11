@@ -49,7 +49,13 @@ export interface Project {
   description?: string;
   hashtags?: string;
   projectType: ProjectType;
-  facelessSource?: "topic" | "reddit_trending";
+  contentType?: "FACELESS_NICHE" | "REDDIT_STORY" | "CLIP_UPLOAD";
+  visualType?: "IMAGE" | "ANIMATED" | "AUTO";
+  facelessSource?: "daily_automation" | "archived_legacy";
+  nicheId?: string;
+  accountId?: string;
+  automationEnabled?: boolean;
+  automationStatus?: "active" | "paused" | "running" | "error";
   topic?: string;
   platforms?: Array<"youtube">;
   targetDurationSeconds?: number;
@@ -57,16 +63,6 @@ export interface Project {
   scriptFramework?: "psychology_truth" | "history_story";
   facelessRenderMode?: "image_story" | "animation_story";
   voice?: string;
-  redditSource?: {
-    postId: string;
-    permalink: string;
-    title: string;
-    body: string;
-    subreddit: string;
-    author?: string;
-    score?: number;
-    fetchedAt?: string;
-  };
   status: ProjectStatus;
   workflowStage: WorkflowStage;
   subtitlePreferences?: ProjectSubtitlePreferences;

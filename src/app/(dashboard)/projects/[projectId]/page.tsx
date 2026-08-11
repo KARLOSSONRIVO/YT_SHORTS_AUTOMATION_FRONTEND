@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { InlineError } from "@/components/common/inline-error";
-import { FacelessPublishPanel } from "@/features/faceless/components/faceless-publish-panel";
+import { ProjectAutomationDashboard } from "@/features/automation/components/project-automation-dashboard";
 import { ProjectHeader } from "@/features/projects/components/project-header";
 import { ProjectProgressPanel } from "@/features/projects/components/project-progress-panel";
 import { JobTimeline } from "@/features/jobs/components/job-timeline";
@@ -23,11 +23,14 @@ export default function ProjectDetailPage() {
     return null;
   }
 
+  if (projectQuery.data.facelessSource === "daily_automation") {
+    return <ProjectAutomationDashboard projectId={projectId} />;
+  }
+
   return (
     <div className="space-y-6">
       <ProjectHeader project={projectQuery.data} />
       <ProjectProgressPanel project={projectQuery.data} />
-      {projectQuery.data.projectType === "faceless_story" ? <FacelessPublishPanel project={projectQuery.data} /> : null}
       <JobTimeline jobs={jobsQuery.data ?? []} />
     </div>
   );

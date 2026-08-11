@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock, MoreVertical, PlayCircle } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatRelativeDate } from "@/lib/utils/format";
 import { getProjectTone, getProjectTypeLabel } from "../lib/project-status";
@@ -15,7 +15,7 @@ export function ProjectCard({ project }: { project: Project }) {
         <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
           <div className="space-y-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-              {getProjectTypeLabel(project.projectType)}
+          {getProjectTypeLabel(project.projectType, project.contentType)}
             </span>
             <h4 className="font-heading text-lg font-bold text-foreground line-clamp-1">{project.title}</h4>
           </div>

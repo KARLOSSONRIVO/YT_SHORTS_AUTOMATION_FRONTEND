@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Film, LayoutDashboard, Rocket, Settings2, UploadCloud, Plus } from "lucide-react";
+import { Film, LayoutDashboard, Rocket, Settings2, Plus } from "lucide-react";
 import { appRoutes } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ export function SidebarNav({ pathname }: { pathname: string }) {
       
       <div className="mt-auto px-2 pt-6 border-t border-border/40">
         <Link 
-          href={appRoutes.uploadsNew}
+          href={appRoutes.createProject}
           className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-110 transition-all duration-200 neon-glow-primary"
         >
           <Plus className="h-5 w-5" />

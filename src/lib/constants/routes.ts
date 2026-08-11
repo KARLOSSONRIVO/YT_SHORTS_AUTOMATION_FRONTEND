@@ -2,7 +2,7 @@ export const appRoutes = {
   login: "/login",
   register: "/register",
   dashboard: "/dashboard",
-  uploadsNew: "/uploads/new",
+  createProject: "/projects/new",
   projects: "/projects",
   reviewQueue: "/projects",
   publish: "/publish",

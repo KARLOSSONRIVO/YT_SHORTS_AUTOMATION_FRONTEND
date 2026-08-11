@@ -22,6 +22,9 @@ export function isProjectActive(status: ProjectStatus) {
   return ACTIVE_STATUSES.includes(status);
 }
 
-export function getProjectTypeLabel(projectType: ProjectType) {
-  return projectType === "faceless_story" ? "Faceless" : "Clipping";
+export function getProjectTypeLabel(projectType: ProjectType, contentType?: "FACELESS_NICHE" | "REDDIT_STORY" | "CLIP_UPLOAD") {
+  if (contentType === "FACELESS_NICHE") return "Faceless Niche Story";
+  if (contentType === "REDDIT_STORY") return "Reddit Story";
+  if (contentType === "CLIP_UPLOAD") return "Clip Upload";
+  return projectType === "faceless_story" ? "Faceless" : "Clip Upload";
 }

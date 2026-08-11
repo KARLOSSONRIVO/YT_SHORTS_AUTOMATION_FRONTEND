@@ -21,8 +21,8 @@ Starter frontend scaffold for the YouTube Shorts automation dashboard.
 ## Backend contract used
 
 - `POST /api/upload`
-- `GET /api/project`
-- `GET /api/project/:projectId`
+- `GET /api/projects`
+- `GET /api/projects/:projectId`
 - `GET /api/job?projectId=...`
 - `GET /api/clip?projectId=...`
 - `PATCH /api/clip/:clipId/review`

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { appRoutes } from "@/lib/constants/routes";
 
 export function AuthShell({
   title,

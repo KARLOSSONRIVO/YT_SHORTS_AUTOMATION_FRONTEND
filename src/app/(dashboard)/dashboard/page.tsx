@@ -17,20 +17,20 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Overview"
-        title="Operate the Shorts pipeline"
-        description="This dashboard should feel like a creator control room: quick uploads, clear workflow state, and immediate access to review-ready clips."
+        title="Project dashboard"
+        description="Monitor your daily niche projects, story generation, approvals, and YouTube uploads."
       />
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Total projects" value={String(projects.length)} hint="Source videos tracked in the system" />
+        <StatCard label="Total projects" value={String(projects.length)} hint="Daily faceless-story projects" />
         <StatCard
           label="Processing now"
           value={String(projects.filter((project) => isProjectActive(project.status)).length)}
-          hint="Projects actively moving through the backend"
+          hint="Projects actively generating or rendering"
         />
         <StatCard
           label="Ready for review"
           value={String(projects.filter((project) => project.status === "review").length)}
-          hint="Projects that need a human decision pass"
+          hint="Stories waiting for approval"
         />
       </div>
       {projectsQuery.isError ? (
