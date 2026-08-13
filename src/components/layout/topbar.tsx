@@ -1,40 +1,47 @@
 "use client";
 
-import { Bell, Search, HelpCircle, LogOut } from "lucide-react";
+import Link from "next/link";
+import { Bell, LogOut, Settings2 } from "lucide-react";
+import { appRoutes } from "@/lib/constants/routes";
 import { useAuth } from "@/features/auth/components/auth-provider";
 
-export function Topbar() {
+function getPageTitle(pathname: string) {
+  if (pathname === appRoutes.dashboard) return "Project overview";
+  if (pathname === appRoutes.projects) return "Source video pipeline";
+  if (pathname === appRoutes.publish) return "Queue approved clips";
+  if (pathname.startsWith(appRoutes.channels)) return "YouTube channels";
+  if (pathname === appRoutes.createProject) return "Create project";
+  if (pathname.startsWith(`${appRoutes.projects}/`)) return "Project workspace";
+  return "Studio Pro";
+}
+
+export function Topbar({ pathname }: { pathname: string }) {
   const { logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md flex justify-between items-center w-full px-10 py-6 border-b border-border/40">
-      <div className="flex items-center gap-6">
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
-          <input 
-            className="bg-card border-none rounded-full pl-12 pr-6 py-2.5 w-72 text-sm focus:ring-1 focus:ring-accent outline-none transition-all duration-200 text-foreground placeholder:text-muted-foreground" 
-            placeholder="Search projects..." 
-            type="text"
-          />
-        </div>
-      </div>
-      
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full text-muted-foreground hover:text-accent transition-colors">
-            <Bell className="h-5 w-5" />
-          </button>
-          <button className="p-2 rounded-full text-muted-foreground hover:text-accent transition-colors">
-            <HelpCircle className="h-5 w-5" />
-          </button>
-          <button 
-            onClick={logout} 
-            className="p-2 rounded-full text-muted-foreground hover:text-accent transition-colors ml-2 border-l border-border/40 pl-6"
-            title="Logout"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
-        </div>
+    <header className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-border/40 bg-background/80 px-10 py-5 backdrop-blur-md">
+      <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">{getPageTitle(pathname)}</h1>
+
+      <div className="flex items-center gap-3">
+        <button aria-label="Notifications" className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent" title="Notifications">
+          <Bell className="h-5 w-5" />
+        </button>
+        <Link
+          aria-label="Settings"
+          className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent"
+          href={appRoutes.channels}
+          title="Settings"
+        >
+          <Settings2 className="h-5 w-5" />
+        </Link>
+        <button
+          aria-label="Log out"
+          className="ml-2 rounded-full border-l border-border/40 p-2 pl-5 text-muted-foreground transition-colors hover:text-accent"
+          onClick={logout}
+          title="Log out"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
       </div>
     </header>
   );

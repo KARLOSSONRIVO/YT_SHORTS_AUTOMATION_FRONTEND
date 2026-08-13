@@ -3,8 +3,12 @@ import { appRoutes } from "@/lib/constants/routes";
 import type { Project } from "../types";
 import { ProjectCard } from "./project-card";
 
-export function ProjectList({ projects }: { projects: Project[] }) {
+export function ProjectList({ projects, searchQuery = "" }: { projects: Project[]; searchQuery?: string }) {
   if (!projects.length) {
+    if (searchQuery.trim()) {
+      return <EmptyState title="No matching projects" description="Try a different project name." />;
+    }
+
     return (
       <EmptyState
         title="No projects yet"

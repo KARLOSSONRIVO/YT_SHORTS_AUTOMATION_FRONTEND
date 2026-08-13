@@ -20,7 +20,7 @@ const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "As
 const today = new Date().toISOString().slice(0, 10);
 const contentTypes: Array<{value:ContentType;label:string;description:string}> = [
   { value: "FACELESS_NICHE", label: "Faceless Niche Story", description: "Generate a unique researched story each day." },
-  { value: "REDDIT_STORY", label: "Reddit Story", description: "Find and transform an eligible Reddit submission." },
+  { value: "REDDIT_STORY", label: "Reddit Story", description: "Transform an eligible Reddit submission over a random background-video segment." },
   { value: "CLIP_UPLOAD", label: "Clip Upload", description: "Queue your own video without story generation." }
 ];
 const defaultReddit: RedditConfig = {
@@ -52,14 +52,14 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
 
   useEffect(()=>{if(!existing.data)return;const p=existing.data;setName(p.title);setContentType(p.contentType);setNicheId(p.nicheId??"");
     setAccountId(p.accountId);setLanguage(p.language);setUploadTime(p.uploadTime);setTimezone(p.timezone);
-    setVisualType(p.visualType??"AUTO");setAutomationMode(p.automationMode);setAutomationEnabled(p.automationEnabled)},[existing.data]);
+    setVisualType(p.contentType==="FACELESS_NICHE"?p.visualType??"AUTO":"AUTO");setAutomationMode(p.automationMode);setAutomationEnabled(p.automationEnabled)},[existing.data]);
 
   const typeValid=contentType==="FACELESS_NICHE"?Boolean(nicheId&&selectedNiche?.active):
     contentType==="REDDIT_STORY"?Boolean(reddit.sourceMode==="AUTO"||reddit.subreddits.length):Boolean(video||editProjectId)&&videoTitle.trim().length>=2;
   const valid=Boolean(name.trim().length>=2&&accountId&&language&&timezone&&/^([01]\d|2[0-3]):[0-5]\d$/.test(uploadTime)&&
     selectedAccount?.status==="connected"&&accountCheck.data?.authenticationActive&&typeValid);
   const payload:ProjectInput={name:name.trim(),contentType,nicheId:contentType==="FACELESS_NICHE"?nicheId:undefined,accountId,language,
-    uploadTime,timezone,visualType:contentType==="CLIP_UPLOAD"?"AUTO":visualType,automationMode,automationEnabled,
+    uploadTime,timezone,visualType:contentType==="FACELESS_NICHE"?visualType:"AUTO",automationMode,automationEnabled,
     redditConfig:contentType==="REDDIT_STORY"?reddit:undefined};
 
   const save=useMutation({mutationFn:async()=>{
@@ -75,7 +75,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
   },onSuccess:(project)=>router.push(appRoutes.projects+"/"+project.id)});
   const seed=useMutation({mutationFn:seedNiches,onSuccess:async()=>{await queryClient.invalidateQueries({queryKey:["project-niches"]});await niches.refetch()}});
   const selectNiche=(value:string)=>{setNicheId(value);const niche=niches.data?.niches.find((item)=>item.id===value);if(niche)setLanguage(niche.defaultLanguage)};
-  const setType=(value:ContentType)=>{setContentType(value);if(value!=="FACELESS_NICHE")setNicheId("");if(value==="CLIP_UPLOAD")setVisualType("AUTO")};
+  const setType=(value:ContentType)=>{setContentType(value);if(value!=="FACELESS_NICHE")setNicheId("");if(value!=="FACELESS_NICHE")setVisualType("AUTO")};
   const toggleSubreddit=(value:string)=>setReddit((current)=>({...current,subreddits:current.subreddits.includes(value)?current.subreddits.filter((item)=>item!==value):[...current.subreddits,value]}));
   const addCustom=()=>{const value=customSubreddit.trim().replace(/^r\//i,"");if(value&&!reddit.subreddits.includes(value)){toggleSubreddit(value);setCustomSubreddit("")}};
 
@@ -117,7 +117,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
         <Field label="Upload Time"><Input type="time" value={uploadTime} onChange={(event)=>setUploadTime(event.target.value)}/></Field>
         <Field label="Timezone"><Select value={timezone} onChange={(event)=>setTimezone(event.target.value)}>
           {Array.from(new Set([detectedTimezone,"Asia/Manila","UTC","America/New_York","America/Los_Angeles","Europe/London"])).map((zone)=><option key={zone}>{zone}</option>)}</Select></Field>
-        {contentType!=="CLIP_UPLOAD"?<Field label="Visual Type"><Select value={visualType} onChange={(event)=>setVisualType(event.target.value as VisualType)}>
+        {contentType==="FACELESS_NICHE"?<Field label="Visual Type"><Select value={visualType} onChange={(event)=>setVisualType(event.target.value as VisualType)}>
           <option value="AUTO">Auto Select</option><option value="IMAGE">Image Story</option><option value="ANIMATED">Animated Story</option></Select>
           <p className="text-xs text-muted-foreground">{visualType==="IMAGE"?"Generated/licensed images with camera movement and transitions.":visualType==="ANIMATED"?"Motion prompts, animated scenes, graphics, and AI video providers.":"Chooses image or animation from the topic, niche, providers, and visual needs."}</p></Field>:null}
         <Field label={contentType==="CLIP_UPLOAD"?"Approval Mode":"Automation Mode"}><Select value={automationMode} onChange={(event)=>setAutomationMode(event.target.value as AutomationMode)}>

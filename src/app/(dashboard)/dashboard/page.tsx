@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Search } from "lucide-react";
 import { InlineError } from "@/components/common/inline-error";
 import { StatCard } from "@/components/common/stat-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -10,16 +12,31 @@ import { isProjectActive } from "@/features/projects/lib/project-status";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
   const projectsQuery = useProjectsQuery(Boolean(user?.id));
   const projects = projectsQuery.data ?? [];
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const filteredProjects = projects.filter((project) => project.title.toLowerCase().includes(normalizedSearchQuery));
 
   return (
     <div className="space-y-6">
       <PageHeader
+        showTitle={false}
         eyebrow="Overview"
-        title="Project dashboard"
+        title="Project overview"
         description="Monitor your daily niche projects, story generation, approvals, and YouTube uploads."
       />
+      <div className="relative max-w-2xl">
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          aria-label="Search projects"
+          className="w-full rounded-full border border-border/40 bg-card py-3 pl-11 pr-5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-accent focus:ring-1 focus:ring-accent"
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search projects..."
+          type="search"
+          value={searchQuery}
+        />
+      </div>
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard label="Total projects" value={String(projects.length)} hint="Daily faceless-story projects" />
         <StatCard
@@ -36,7 +53,7 @@ export default function DashboardPage() {
       {projectsQuery.isError ? (
         <InlineError message="Projects could not be loaded. Check the API base URL and backend availability." />
       ) : null}
-      <ProjectList projects={projects} />
+      <ProjectList projects={filteredProjects} searchQuery={searchQuery} />
     </div>
   );
 }

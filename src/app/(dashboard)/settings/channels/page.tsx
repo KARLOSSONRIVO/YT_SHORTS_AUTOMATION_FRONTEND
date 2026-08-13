@@ -13,6 +13,7 @@ export default function ChannelsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        showTitle={false}
         eyebrow="Settings"
         title="YouTube channels"
         description="Keep your connected YouTube accounts here so publishing targets stay easy to manage."

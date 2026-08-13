@@ -61,7 +61,7 @@ export interface Project {
   targetDurationSeconds?: number;
   stylePreset?: string;
   scriptFramework?: "psychology_truth" | "history_story";
-  facelessRenderMode?: "image_story" | "animation_story";
+  facelessRenderMode?: "image_story" | "animation_story" | "background_video";
   voice?: string;
   status: ProjectStatus;
   workflowStage: WorkflowStage;

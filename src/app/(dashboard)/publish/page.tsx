@@ -173,6 +173,7 @@ export default function PublishPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        showTitle={false}
         eyebrow="Publish"
         title="Queue approved clips"
         description="Treat publishing as the final confirmation step. Channel state, metadata, and privacy settings should all be visible here."

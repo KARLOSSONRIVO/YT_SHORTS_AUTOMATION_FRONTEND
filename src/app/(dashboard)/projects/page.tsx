@@ -12,6 +12,7 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        showTitle={false}
         eyebrow="Projects"
         title="Source video pipeline"
         description="This is the all-projects view: status scanning, routing into active work, and recovery when a project fails mid-pipeline."

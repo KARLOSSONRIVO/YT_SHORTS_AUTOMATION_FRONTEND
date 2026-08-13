@@ -14,7 +14,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       
       {/* Main Content Area */}
       <main className="ml-[280px] min-h-screen">
-        <Topbar />
+        <Topbar pathname={pathname} />
         
         {/* Content Canvas */}
         <div className="p-10 max-w-[1400px] mx-auto">

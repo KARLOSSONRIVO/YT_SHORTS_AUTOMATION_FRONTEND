@@ -8,7 +8,9 @@ export function ProjectProgressPanel({ project }: { project: Project }) {
       title="Workflow progress"
       description={
         project.projectType === "faceless_story"
-          ? "This project tracks the script, narration, subtitles, scene generation, and final vertical render."
+          ? project.facelessRenderMode === "background_video"
+            ? "This Reddit project tracks the script, narration, subtitles, and final background-video render."
+            : "This project tracks the script, narration, subtitles, scene generation, and final vertical render."
           : "This card is the project-level summary. Keep it readable and let the job timeline carry the deeper execution detail."
       }
     >
