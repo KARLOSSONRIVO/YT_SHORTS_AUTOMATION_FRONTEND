@@ -103,9 +103,10 @@ function ClipRow({clip,first,last,moveUp,moveDown,upload,retry,remove,replace,sc
         <Button size="sm" variant="destructive" onClick={remove}>Remove</Button></>:null}</div></div>;
 }
 function StoryCard({story,account,onApprove,onReject,onRetryGeneration,onRetryUpload}:{story:Story;account:string;onApprove:()=>void;onReject:()=>void;onRetryGeneration:()=>void;onRetryUpload:()=>void}){
+  const youtubeUrl=story.platformUrl??(story.platformVideoId?`https://www.youtube.com/watch?v=${story.platformVideoId}`:undefined);
   return <div className="rounded-2xl border p-5"><div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold">{story.title}</h3><p className="text-sm text-muted-foreground">{story.topic}</p></div><StatusBadge tone={tone(story.status)}>{pretty(story.status)}</StatusBadge></div>
     <div className="mt-4 grid gap-3 text-xs sm:grid-cols-3"><Detail label="Narrative Format" value={pretty(story.storyFormat)}/><Detail label="Assigned Account" value={story.metadata?.assignedAccount??account}/><Detail label="Scheduled Upload" value={when(story.scheduledUploadTime)}/></div>
-    {story.metadata?.finalVideoUrl?<video className="mt-4 aspect-[9/16] max-h-80 rounded-xl bg-black" controls src={story.metadata.finalVideoUrl}/>:null}
+    {youtubeUrl?<a className="mt-4 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" href={youtubeUrl} target="_blank" rel="noreferrer">Open on YouTube</a>:null}
     {story.lastError?<p className="mt-3 text-sm text-destructive">{story.lastError}</p>:null}<div className="mt-4 flex gap-2">{story.status==="awaiting_approval"?<><Button size="sm" onClick={onApprove}>Approve and Upload</Button><Button size="sm" variant="outline" onClick={onReject}>Reject</Button></>:null}
       {story.status==="failed"?(story.uploadAttempts??0)>0?<Button size="sm" onClick={onRetryUpload}>Retry Upload</Button>:<Button size="sm" onClick={onRetryGeneration}>Retry Generation</Button>:null}</div></div>;
 }
