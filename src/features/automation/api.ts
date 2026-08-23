@@ -12,6 +12,7 @@ export const generateNow = (id:string) => apiRequest<{jobId:string;status:string
 export const pauseAutomation = (id:string) => apiRequest<ProjectAutomation>(`/projects/${id}/pause`,{method:"POST"});
 export const resumeAutomation = (id:string) => apiRequest<ProjectAutomation>(`/projects/${id}/resume`,{method:"POST"});
 export const approveStory = (projectId:string,storyId:string) => apiRequest<Story>(`/projects/${projectId}/stories/${storyId}/approve`,{method:"POST"});
+export const uploadStoryNow = (projectId:string,storyId:string) => apiRequest<Story>(`/projects/${projectId}/stories/${storyId}/upload-now`,{method:"POST"});
 export const rejectStory = (projectId:string,storyId:string) => apiRequest<Story>(`/projects/${projectId}/stories/${storyId}/reject`,{method:"POST"});
 export const retryGeneration = (projectId:string,storyId:string) => apiRequest<unknown>(`/projects/${projectId}/stories/${storyId}/retry-generation`,{method:"POST"});
 export const retryUpload = (projectId:string,storyId:string) => apiRequest<unknown>(`/projects/${projectId}/stories/${storyId}/retry-upload`,{method:"POST"});

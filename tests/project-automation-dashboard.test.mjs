@@ -35,6 +35,9 @@ async function loadStoryCard() {
   const localRequire = (specifier) => {
     if (specifier === "react" || specifier === "react/jsx-runtime") return require(specifier);
     if (specifier === "lucide-react") return icons;
+    if (specifier === "@/components/ui/button") {
+      return { Button: ({ children, ...props }) => React.createElement("button", props, children) };
+    }
     if (specifier === "@/components/common/status-badge") {
       return { StatusBadge: ({ children }) => React.createElement("span", null, children) };
     }
@@ -103,4 +106,30 @@ test("posted story builds a YouTube watch link from its platform video ID", asyn
   assert.match(markup, /<a[^>]*href="https:\/\/www\.youtube\.com\/watch\?v=fallback-456"[^>]*>Open on YouTube<\/a>/);
   assert.doesNotMatch(markup, /outputs\/reddit\/rendered_video/);
   assert.doesNotMatch(markup, /<video/);
+});
+
+test("Upload Now is shown only for stories with a scheduled upload", async () => {
+  const StoryCard = await loadStoryCard();
+  const renderStory = (story) => renderToStaticMarkup(
+    React.createElement(StoryCard, {
+      account: "StoriesHistory",
+      onApprove() {},
+      onReject() {},
+      onRetryGeneration() {},
+      onRetryUpload() {},
+      onUploadNow() {},
+      story: {
+        id: "story-scheduled",
+        status: "scheduled",
+        storyFormat: "hero_story",
+        title: "A scheduled story",
+        topic: "A scheduled topic",
+        ...story,
+      },
+    }),
+  );
+
+  assert.match(renderStory({ scheduledUploadTime: "2026-08-20T11:00:00.000Z" }), /Upload Now/);
+  assert.doesNotMatch(renderStory({}), /Upload Now/);
+  assert.doesNotMatch(renderStory({ status: "awaiting_approval", scheduledUploadTime: "2026-08-20T11:00:00.000Z" }), /Upload Now/);
 });

@@ -12,7 +12,7 @@ import { StatusBadge } from "@/components/common/status-badge";
 import { appRoutes } from "@/lib/constants/routes";
 import { approveStory, deleteAutomationProject, generateNow, getProjectDashboard, pauseAutomation, rejectStory,
   removeQueuedClip, reorderQueuedClips, replaceQueuedClip, resumeAutomation, retryGeneration, retryQueuedClip, retryUpload,
-  scheduleQueuedClip, uploadQueuedClipNow } from "../api";
+  scheduleQueuedClip, uploadQueuedClipNow, uploadStoryNow } from "../api";
 import type { QueuedClip, Story } from "../types";
 
 const pretty=(value?:string)=>value?value.replaceAll("_"," ").replace(/\b\w/g,(letter)=>letter.toUpperCase()):"-";
@@ -27,6 +27,7 @@ export function ProjectAutomationDashboard({projectId}:{projectId:string}){
   const pause=useMutation({mutationFn:()=>pauseAutomation(projectId),onSuccess:refresh});
   const resume=useMutation({mutationFn:()=>resumeAutomation(projectId),onSuccess:refresh});
   const approve=useMutation({mutationFn:(id:string)=>approveStory(projectId,id),onSuccess:refresh});
+  const storyUpload=useMutation({mutationFn:(id:string)=>uploadStoryNow(projectId,id),onSuccess:refresh});
   const reject=useMutation({mutationFn:(id:string)=>rejectStory(projectId,id),onSuccess:refresh});
   const retryGen=useMutation({mutationFn:(id:string)=>retryGeneration(projectId,id),onSuccess:refresh});
   const retryUp=useMutation({mutationFn:(id:string)=>retryUpload(projectId,id),onSuccess:refresh});
@@ -40,7 +41,7 @@ export function ProjectAutomationDashboard({projectId}:{projectId:string}){
   if(dashboard.isError)return <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-destructive">Project dashboard could not be loaded. <Button variant="outline" size="sm" onClick={()=>dashboard.refetch()}>Retry</Button></div>;
   if(!dashboard.data)return <p className="text-muted-foreground">Loading project dashboard...</p>;
   const data=dashboard.data,project=data.project;
-  const actions=[run,pause,resume,approve,reject,retryGen,retryUp,clipUpload,clipRetry,clipRemove,clipReorder,clipReplace,clipSchedule,remove];
+  const actions=[run,pause,resume,approve,storyUpload,reject,retryGen,retryUp,clipUpload,clipRetry,clipRemove,clipReorder,clipReplace,clipSchedule,remove];
   const actionError=actions.find((item)=>item.isError)?.error;
   const typeLabel=project.contentType==="FACELESS_NICHE"?"Faceless Niche Story":project.contentType==="REDDIT_STORY"?"Reddit Story":"Clip Upload";
   const runLabel=project.contentType==="REDDIT_STORY"?"Fetch Reddit Story Now":project.contentType==="CLIP_UPLOAD"?"Upload Next Clip":"Generate Now";
@@ -73,7 +74,8 @@ export function ProjectAutomationDashboard({projectId}:{projectId:string}){
     <Card><CardHeader><CardTitle>{project.contentType==="REDDIT_STORY"?"Today’s Reddit Story":"Today’s Story and Upload Status"}</CardTitle>
       <CardDescription>One unique eligible story per project and local day.</CardDescription></CardHeader><CardContent className="space-y-4">{data.stories.length?
       data.stories.map((story)=><StoryCard key={story.id} story={story} account={data.account.channelName} onApprove={()=>approve.mutate(story.id)}
-        onReject={()=>reject.mutate(story.id)} onRetryGeneration={()=>retryGen.mutate(story.id)} onRetryUpload={()=>retryUp.mutate(story.id)}/>):<Empty text="No story has been generated today."/ >}</CardContent></Card>}
+        onUploadNow={()=>storyUpload.mutate(story.id)} uploadNowPending={storyUpload.isPending} onReject={()=>reject.mutate(story.id)}
+        onRetryGeneration={()=>retryGen.mutate(story.id)} onRetryUpload={()=>retryUp.mutate(story.id)}/>):<Empty text="No story has been generated today."/ >}</CardContent></Card>}
 
     {project.contentType==="REDDIT_STORY"?<Card><CardHeader><CardTitle>Reddit Source History</CardTitle><CardDescription>Selected, rejected, transformed, and uploaded source records.</CardDescription></CardHeader>
       <CardContent className="space-y-3">{data.redditSources?.length?data.redditSources.map((source)=><div key={source.id} className="rounded-2xl border p-4">
@@ -102,12 +104,12 @@ function ClipRow({clip,first,last,moveUp,moveDown,upload,retry,remove,replace,sc
         <Input className="h-9 w-auto" type="datetime-local" value={scheduledAt} onChange={(event)=>setScheduledAt(event.target.value)}/><Button size="sm" variant="outline" disabled={!scheduledAt} onClick={()=>schedule(new Date(scheduledAt).toISOString())}>Schedule</Button>
         <Button size="sm" variant="destructive" onClick={remove}>Remove</Button></>:null}</div></div>;
 }
-function StoryCard({story,account,onApprove,onReject,onRetryGeneration,onRetryUpload}:{story:Story;account:string;onApprove:()=>void;onReject:()=>void;onRetryGeneration:()=>void;onRetryUpload:()=>void}){
+function StoryCard({story,account,onApprove,onUploadNow,uploadNowPending,onReject,onRetryGeneration,onRetryUpload}:{story:Story;account:string;onApprove:()=>void;onUploadNow:()=>void;uploadNowPending:boolean;onReject:()=>void;onRetryGeneration:()=>void;onRetryUpload:()=>void}){
   const youtubeUrl=story.platformUrl??(story.platformVideoId?`https://www.youtube.com/watch?v=${story.platformVideoId}`:undefined);
   return <div className="rounded-2xl border p-5"><div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold">{story.title}</h3><p className="text-sm text-muted-foreground">{story.topic}</p></div><StatusBadge tone={tone(story.status)}>{pretty(story.status)}</StatusBadge></div>
     <div className="mt-4 grid gap-3 text-xs sm:grid-cols-3"><Detail label="Narrative Format" value={pretty(story.storyFormat)}/><Detail label="Assigned Account" value={story.metadata?.assignedAccount??account}/><Detail label="Scheduled Upload" value={when(story.scheduledUploadTime)}/></div>
     {youtubeUrl?<a className="mt-4 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline" href={youtubeUrl} target="_blank" rel="noreferrer">Open on YouTube</a>:null}
-    {story.lastError?<p className="mt-3 text-sm text-destructive">{story.lastError}</p>:null}<div className="mt-4 flex gap-2">{story.status==="awaiting_approval"?<><Button size="sm" onClick={onApprove}>Approve and Upload</Button><Button size="sm" variant="outline" onClick={onReject}>Reject</Button></>:null}
+    {story.lastError?<p className="mt-3 text-sm text-destructive">{story.lastError}</p>:null}<div className="mt-4 flex gap-2">{story.status==="scheduled"&&story.scheduledUploadTime?<Button size="sm" onClick={onUploadNow} disabled={uploadNowPending}><UploadCloud/>{uploadNowPending?"Uploading...":"Upload Now"}</Button>:null}{story.status==="awaiting_approval"?<><Button size="sm" onClick={onApprove}>Approve and Upload</Button><Button size="sm" variant="outline" onClick={onReject}>Reject</Button></>:null}
       {story.status==="failed"?(story.uploadAttempts??0)>0?<Button size="sm" onClick={onRetryUpload}>Retry Upload</Button>:<Button size="sm" onClick={onRetryGeneration}>Retry Generation</Button>:null}</div></div>;
 }
 function Detail({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-muted/40 p-3"><span className="text-muted-foreground">{label}</span><p className="mt-1 font-medium">{value}</p></div>}
