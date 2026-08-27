@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/common/status-badge";
+import { LoadingOverlay } from "@/components/common/loading-overlay";
 import { appRoutes } from "@/lib/constants/routes";
 import { approveStory, deleteAutomationProject, generateNow, getProjectDashboard, pauseAutomation, rejectStory,
   removeQueuedClip, reorderQueuedClips, replaceQueuedClip, resumeAutomation, retryGeneration, retryQueuedClip, retryUpload,
@@ -21,6 +22,7 @@ const tone=(status:string):"neutral"|"warning"|"success"|"error"=>status==="uplo
 
 export function ProjectAutomationDashboard({projectId}:{projectId:string}){
   const router=useRouter(),client=useQueryClient();
+  const [deletePhase,setDeletePhase]=useState<"idle"|"deleting"|"redirecting">("idle");
   const dashboard=useQuery({queryKey:["project-dashboard",projectId],queryFn:()=>getProjectDashboard(projectId),refetchInterval:10000});
   const refresh=()=>client.invalidateQueries({queryKey:["project-dashboard",projectId]});
   const run=useMutation({mutationFn:()=>generateNow(projectId),onSuccess:refresh});
@@ -37,8 +39,9 @@ export function ProjectAutomationDashboard({projectId}:{projectId:string}){
   const clipReorder=useMutation({mutationFn:(ids:string[])=>reorderQueuedClips(projectId,ids),onSuccess:refresh});
   const clipReplace=useMutation({mutationFn:(input:{id:string;file:File})=>replaceQueuedClip(projectId,input.id,input.file),onSuccess:refresh});
   const clipSchedule=useMutation({mutationFn:(input:{id:string;scheduledAt:string})=>scheduleQueuedClip(projectId,input.id,input.scheduledAt),onSuccess:refresh});
-  const remove=useMutation({mutationFn:()=>deleteAutomationProject(projectId),onSuccess:()=>router.push(appRoutes.projects)});
-  if(dashboard.isError)return <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-destructive">Project dashboard could not be loaded. <Button variant="outline" size="sm" onClick={()=>dashboard.refetch()}>Retry</Button></div>;
+  const remove=useMutation({mutationFn:()=>deleteAutomationProject(projectId),onMutate:()=>setDeletePhase("deleting"),
+    onSuccess:()=>{setDeletePhase("redirecting");router.push(appRoutes.projects)},onError:()=>setDeletePhase("idle")});
+  if(dashboard.isError&&deletePhase==="idle")return <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-destructive">Project dashboard could not be loaded. <Button variant="outline" size="sm" onClick={()=>dashboard.refetch()}>Retry</Button></div>;
   if(!dashboard.data)return <p className="text-muted-foreground">Loading project dashboard...</p>;
   const data=dashboard.data,project=data.project;
   const actions=[run,pause,resume,approve,storyUpload,reject,retryGen,retryUp,clipUpload,clipRetry,clipRemove,clipReorder,clipReplace,clipSchedule,remove];
@@ -48,12 +51,17 @@ export function ProjectAutomationDashboard({projectId}:{projectId:string}){
   const clips=data.clips??[];
   const move=(index:number,direction:number)=>{const target=index+direction;if(target<0||target>=clips.length)return;const ids=clips.map((clip)=>clip.id);[ids[index],ids[target]]=[ids[target],ids[index]];clipReorder.mutate(ids)};
   return <div className="space-y-6">
+    <LoadingOverlay open={deletePhase!=="idle"} tone="destructive"
+      title={deletePhase==="redirecting"?"Project deleted":"Deleting project"}
+      description={deletePhase==="redirecting"?"Taking you back to your projects.":"Removing pending local assets, queued clips, and renders. Published history is preserved."}
+      steps={[{label:"Removing project assets and queue",state:deletePhase==="deleting"?"active":"done"},
+        {label:"Returning to your projects",state:deletePhase==="redirecting"?"active":"pending"}]}/>
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div>
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">{typeLabel}</p>
       <h1 className="mt-2 font-heading text-3xl font-bold">{project.title}</h1>
       <p className="mt-2 text-muted-foreground">{project.nicheId?pretty(project.nicheId)+" · ":""}{data.account.channelName+" · "+pretty(project.automationMode)}{project.visualType?" · "+pretty(project.visualType):""}</p></div>
       <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link href={appRoutes.createProject+"?edit="+projectId}><Edit3/>Edit Project</Link></Button>
-        <Button variant="destructive" disabled={remove.isPending} onClick={()=>{if(window.confirm("Delete this project and pending local assets? Published history is preserved."))remove.mutate()}}><Trash2/>Delete Project</Button></div></div>
+        <Button variant="destructive" disabled={deletePhase!=="idle"} onClick={()=>{if(window.confirm("Delete this project and pending local assets? Published history is preserved."))remove.mutate()}}><Trash2/>Delete Project</Button></div></div>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric icon={<CalendarClock/>} label="Next Scheduled Run" value={when(project.nextRunAt)}/>
       <Metric icon={<CheckCircle2/>} label="Last Successful Run" value={when(data.lastSuccessfulGeneration)}/>
       <Metric icon={<UploadCloud/>} label="Last Upload" value={when(data.lastUpload)}/><Metric icon={<Clock3/>} label="Current Job Status" value={pretty(data.currentJobStatus)}/></div>

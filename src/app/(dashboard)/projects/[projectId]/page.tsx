@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { InlineError } from "@/components/common/inline-error";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectAutomationDashboard } from "@/features/automation/components/project-automation-dashboard";
 import { ProjectHeader } from "@/features/projects/components/project-header";
 import { ProjectProgressPanel } from "@/features/projects/components/project-progress-panel";
@@ -20,7 +21,13 @@ export default function ProjectDetailPage() {
   }
 
   if (!projectQuery.data) {
-    return null;
+    return (
+      <div className="space-y-6" aria-busy="true">
+        <Skeleton className="h-24" />
+        <Skeleton className="h-64" />
+        <Skeleton className="h-48" />
+      </div>
+    );
   }
 
   if (projectQuery.data.facelessSource === "daily_automation") {

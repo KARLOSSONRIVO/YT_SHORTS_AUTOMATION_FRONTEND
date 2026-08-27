@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
+import { LoadingOverlay } from "@/components/common/loading-overlay";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function ProjectHeader({ project }: { project: Project }) {
   const router = useRouter();
   const deleteMutation = useDeleteProjectMutation(project.id);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletePhase, setDeletePhase] = useState<"idle" | "deleting" | "redirecting">("idle");
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
@@ -28,17 +30,40 @@ export function ProjectHeader({ project }: { project: Project }) {
     }
 
     setDeleteError(null);
+    setDeletePhase("deleting");
 
     try {
       await deleteMutation.mutateAsync();
+      setDeletePhase("redirecting");
       router.push(appRoutes.projects);
     } catch (error) {
+      setDeletePhase("idle");
       setDeleteError(error instanceof ApiError ? error.message : "Project deletion failed.");
     }
   };
 
   return (
     <div className="space-y-2">
+      <LoadingOverlay
+        open={deletePhase !== "idle"}
+        tone="destructive"
+        title={deletePhase === "redirecting" ? "Project deleted" : "Deleting project"}
+        description={
+          deletePhase === "redirecting"
+            ? "Taking you back to your projects."
+            : "Removing renders, subtitles, transcripts, and publish archives. This can take a moment."
+        }
+        steps={[
+          {
+            label: "Removing project files and archives",
+            state: deletePhase === "deleting" ? "active" : "done"
+          },
+          {
+            label: "Returning to your projects",
+            state: deletePhase === "redirecting" ? "active" : "pending"
+          }
+        ]}
+      />
       <PageHeader
         eyebrow={project.projectType === "faceless_story" ? "Faceless Project" : "Project"}
         title={project.title}
@@ -57,8 +82,8 @@ export function ProjectHeader({ project }: { project: Project }) {
                 <Link href={`/projects/${project.id}/review`}>Open Review</Link>
               </Button>
             ) : null}
-            <Button variant="destructive" disabled={deleteMutation.isPending} onClick={handleDelete}>
-              {deleteMutation.isPending ? "Deleting..." : "Delete Project"}
+            <Button variant="destructive" disabled={deletePhase !== "idle"} onClick={handleDelete}>
+              {deletePhase !== "idle" ? "Deleting..." : "Delete Project"}
             </Button>
           </div>
         }

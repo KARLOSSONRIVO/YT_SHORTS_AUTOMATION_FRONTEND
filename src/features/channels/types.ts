@@ -6,4 +6,6 @@ export interface Channel {
   title: string;
   tokenExpiryDate?: string;
   status: "connected" | "disconnected";
+  nicheId?: string;
+  nicheLockExempt?: boolean;
 }

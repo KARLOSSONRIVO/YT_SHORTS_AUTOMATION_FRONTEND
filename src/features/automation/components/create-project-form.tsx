@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, RefreshCw, Upload } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingOverlay, type LoadingOverlayStep } from "@/components/common/loading-overlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ const defaultReddit: RedditConfig = {
   minimumComments: 10, minimumBodyLength: 300, allowNSFW: false, includeComments: false,
   excludeLocked: true, contentFilters: [], attributionMode: "link", allowCrossAccountReuse: false
 };
+type SavePhase = "idle" | "saving" | "uploading" | "opening";
 
 export function CreateProjectForm({ editProjectId }: { editProjectId?: string }) {
   const router=useRouter(); const queryClient=useQueryClient(); const channels=useChannelsQuery();
@@ -41,6 +43,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
   const [automationEnabled,setAutomationEnabled]=useState(true); const [reddit,setReddit]=useState<RedditConfig>(defaultReddit);
   const [customSubreddit,setCustomSubreddit]=useState(""); const [video,setVideo]=useState<File>(); const [thumbnail,setThumbnail]=useState<File>();
   const [subtitles,setSubtitles]=useState<File>();
+  const [phase,setPhase]=useState<SavePhase>("idle");
   const [videoTitle,setVideoTitle]=useState(""); const [description,setDescription]=useState(""); const [hashtags,setHashtags]=useState("");
   const [scheduleDate,setScheduleDate]=useState(today); const [privacy,setPrivacy]=useState<"private"|"public"|"unlisted">("private");
   const [audience,setAudience]=useState<"not_made_for_kids"|"made_for_kids">("not_made_for_kids");
@@ -54,6 +57,9 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
     setAccountId(p.accountId);setLanguage(p.language);setUploadTime(p.uploadTime);setTimezone(p.timezone);
     setVisualType(p.contentType==="FACELESS_NICHE"?p.visualType??"AUTO":"AUTO");setAutomationMode(p.automationMode);setAutomationEnabled(p.automationEnabled)},[existing.data]);
 
+  useEffect(()=>{if(contentType!=="FACELESS_NICHE"||!nicheId||!accountId)return;const channel=channels.data?.find((item)=>item.id===accountId);
+    if(channel&&!channel.nicheLockExempt&&channel.nicheId&&channel.nicheId!==nicheId)setAccountId("")},[contentType,nicheId,accountId,channels.data]);
+
   const typeValid=contentType==="FACELESS_NICHE"?Boolean(nicheId&&selectedNiche?.active):
     contentType==="REDDIT_STORY"?Boolean(reddit.sourceMode==="AUTO"||reddit.subreddits.length):Boolean(video||editProjectId)&&videoTitle.trim().length>=2;
   const valid=Boolean(name.trim().length>=2&&accountId&&language&&timezone&&/^([01]\d|2[0-3]):[0-5]\d$/.test(uploadTime)&&
@@ -63,8 +69,10 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
     redditConfig:contentType==="REDDIT_STORY"?reddit:undefined};
 
   const save=useMutation({mutationFn:async()=>{
+    setPhase("saving");
     const project=editProjectId?await updateAutomationProject(editProjectId,payload):await createAutomationProject(payload);
     if(contentType==="CLIP_UPLOAD"&&video){
+      setPhase("uploading");
       const form=new FormData();form.append("video",video);if(thumbnail)form.append("thumbnail",thumbnail);
       if(subtitles)form.append("subtitles",subtitles);form.append("title",videoTitle.trim());form.append("description",description);form.append("hashtags",hashtags);
       form.append("language",language);form.append("privacyStatus",privacy);form.append("audienceSetting",audience);
@@ -72,7 +80,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
       await uploadQueuedClip(project.id,form);
     }
     return project;
-  },onSuccess:(project)=>router.push(appRoutes.projects+"/"+project.id)});
+  },onSuccess:(project)=>{setPhase("opening");router.push(appRoutes.projects+"/"+project.id)},onError:()=>setPhase("idle")});
   const seed=useMutation({mutationFn:seedNiches,onSuccess:async()=>{await queryClient.invalidateQueries({queryKey:["project-niches"]});await niches.refetch()}});
   const selectNiche=(value:string)=>{setNicheId(value);const niche=niches.data?.niches.find((item)=>item.id===value);if(niche)setLanguage(niche.defaultLanguage)};
   const setType=(value:ContentType)=>{setContentType(value);if(value!=="FACELESS_NICHE")setNicheId("");if(value!=="FACELESS_NICHE")setVisualType("AUTO")};
@@ -80,6 +88,11 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
   const addCustom=()=>{const value=customSubreddit.trim().replace(/^r\//i,"");if(value&&!reddit.subreddits.includes(value)){toggleSubreddit(value);setCustomSubreddit("")}};
 
   return <div className="space-y-6">
+    <LoadingOverlay open={phase!=="idle"}
+      title={phase==="opening"?(editProjectId?"Changes saved":"Project created"):editProjectId?"Saving changes":"Creating your project"}
+      description={phase==="uploading"?"Keep this tab open while your video uploads and is hash-checked.":
+        phase==="opening"?"Taking you to the project workspace.":"Validating your channel and scheduling the project. This can take a few moments."}
+      steps={savingSteps(phase,contentType==="CLIP_UPLOAD"&&Boolean(video),Boolean(editProjectId))}/>
     <div><p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Unified content automation</p>
       <h1 className="mt-2 font-heading text-3xl font-bold">{editProjectId?"Edit Project":"Create Project"}</h1>
       <p className="mt-2 max-w-3xl text-muted-foreground">Create niche stories, transformed Reddit stories, or scheduled clip uploads in one shared project system.</p></div>
@@ -109,7 +122,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
           privacy={privacy} setPrivacy={setPrivacy} audience={audience} setAudience={setAudience}/>:null}
 
         <Field label="Assigned YouTube Account"><Select value={accountId} onChange={(event)=>setAccountId(event.target.value)}>
-          <option value="">Choose a connected account</option>{channels.data?.map((channel)=><option key={channel.id} value={channel.id} disabled={channel.status!=="connected"}>{channel.title} - {channel.externalChannelId}</option>)}</Select>
+          <option value="">Choose a connected account</option>{channels.data?.map((channel)=>{const locked=contentType==="FACELESS_NICHE"&&Boolean(nicheId)&&!channel.nicheLockExempt&&Boolean(channel.nicheId)&&channel.nicheId!==nicheId;return <option key={channel.id} value={channel.id} disabled={channel.status!=="connected"||locked}>{channel.title} - {channel.externalChannelId}{locked?" — dedicated to another niche":""}</option>})}</Select>
           {accountCheck.isError?<p className="text-xs text-destructive">Account validation failed. Reconnect the account and retry.</p>:null}
           {accountCheck.data&&!accountCheck.data.authenticationActive?<p className="text-xs text-destructive">Authentication is inactive. Refresh this account in Channels.</p>:null}</Field>
         <Field label="Language"><Select value={language} onChange={(event)=>setLanguage(event.target.value)}><option value="en">English</option><option value="fil">Filipino</option><option value="es">Spanish</option></Select></Field>
@@ -126,7 +139,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
           <span><span className="block font-semibold">{contentType==="CLIP_UPLOAD"?"Enable automatic clip queue":"Enable daily automation"}</span>
           <span className="text-xs text-muted-foreground">{contentType==="CLIP_UPLOAD"?"Upload the next eligible clip at the configured time.":"Create one unique eligible story per day."}</span></span></label>
         {save.isError?<p className="md:col-span-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{save.error instanceof Error?save.error.message:"Project could not be saved."}</p>:null}
-        <div className="md:col-span-2 flex justify-end"><Button size="lg" disabled={!valid||save.isPending} onClick={()=>save.mutate()}>
+        <div className="md:col-span-2 flex justify-end"><Button size="lg" disabled={!valid||save.isPending||phase!=="idle"} onClick={()=>save.mutate()}>
           {save.isPending?<><Loader2 className="animate-spin"/>Saving project...</>:contentType==="CLIP_UPLOAD"?"Create Project & Queue Clip":editProjectId?"Save Changes":"Create Project"}</Button></div>
       </CardContent></Card>
   </div>;
@@ -134,6 +147,16 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
 
 function Field({label,wide,children}:{label:string;wide?:boolean;children:React.ReactNode}){return <div className={"space-y-2 "+(wide?"md:col-span-2":"")}><Label>{label}</Label>{children}</div>}
 function State({icon,text,action}:{icon:React.ReactNode;text:string;action?:React.ReactNode}){return <div className="flex min-h-10 items-center justify-between gap-3 rounded-xl border bg-muted/20 p-3 text-sm"><span className="flex items-center gap-2 text-muted-foreground">{icon}{text}</span>{action}</div>}
+
+function savingSteps(phase:SavePhase,uploadsClip:boolean,editing:boolean):LoadingOverlayStep[]{
+  const order:Array<Exclude<SavePhase,"idle">>=uploadsClip?["saving","uploading","opening"]:["saving","opening"];
+  const labels:Record<Exclude<SavePhase,"idle">,string>={
+    saving:editing?"Saving project changes":"Creating project and validating your channel",
+    uploading:"Uploading and hash-checking your clip",
+    opening:"Opening the project workspace"};
+  const current=order.indexOf(phase as Exclude<SavePhase,"idle">);
+  return order.map((key,index):LoadingOverlayStep=>({label:labels[key],state:index===current?"active":index<current?"done":"pending"}));
+}
 
 function RedditFields({reddit,setReddit,approved,custom,setCustom,addCustom,toggle,loading,error}:{reddit:RedditConfig;setReddit:React.Dispatch<React.SetStateAction<RedditConfig>>;
   approved:string[];custom:string;setCustom:(value:string)=>void;addCustom:()=>void;toggle:(value:string)=>void;loading:boolean;error:boolean}){
