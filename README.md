@@ -1,4 +1,4 @@
-# FACELESS_VIDEO_FRONTEND
+# Studio Pro
 
 Starter frontend scaffold for the YouTube Shorts automation dashboard.
 

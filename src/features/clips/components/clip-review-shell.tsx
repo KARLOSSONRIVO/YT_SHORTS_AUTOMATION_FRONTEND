@@ -36,7 +36,7 @@ export function ClipReviewShell({
       title={project ? `${project.title} review queue` : "Review queue"}
       description="Use a two-pane review flow: fast clip scanning on the left and focused preview plus actions on the right."
     >
-      <div className="mb-6 grid gap-3 rounded-[28px] border border-border/70 bg-background/80 p-4 md:grid-cols-3">
+      <div className="mb-6 grid gap-3 rounded-control border border-border bg-background/80 p-4 md:grid-cols-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Pending Review</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">{pendingReviewCount}</p>

@@ -101,7 +101,7 @@ export function PublishForm({
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
       {!isPublishable ? (
-        <p className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        <p className="rounded-control border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           {clip.reviewStatus === "rejected"
             ? "This clip was rejected, so publishing is locked."
             : clip.reviewStatus !== "approved"

@@ -72,10 +72,10 @@ export function LoadingOverlay({
       aria-busy="true"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 p-6 backdrop-blur-md focus:outline-none"
     >
-      <div className="w-full max-w-sm rounded-[28px] border border-border bg-card/95 p-8 text-center shadow-soft">
+      <div className="w-full max-w-sm rounded-container border border-border bg-card/95 p-8 text-center shadow-soft">
         <span className="relative mx-auto flex h-16 w-16 items-center justify-center">
           <span className={cn("absolute inset-1 rounded-full blur-xl", accentGlow)} />
-          <span className="absolute inset-0 rounded-full border border-border/70" />
+          <span className="absolute inset-0 rounded-full border border-border" />
           <svg
             viewBox="0 0 64 64"
             fill="none"

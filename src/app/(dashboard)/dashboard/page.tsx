@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { InlineError } from "@/components/common/inline-error";
 import { StatCard } from "@/components/common/stat-card";
 import { PageHeader } from "@/components/layout/page-header";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { ProjectList } from "@/features/projects/components/project-list";
 import { useProjectsQuery } from "@/features/projects/hooks/use-projects-query";
@@ -28,9 +29,9 @@ export default function DashboardPage() {
       />
       <div className="relative max-w-2xl">
         <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           aria-label="Search projects"
-          className="w-full rounded-full border border-border/40 bg-card py-3 pl-11 pr-5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-accent focus:ring-1 focus:ring-accent"
+          className="pl-11"
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search projects..."
           type="search"

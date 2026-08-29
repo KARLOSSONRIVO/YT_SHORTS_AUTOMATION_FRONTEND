@@ -15,7 +15,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Shorts Studio",
+  title: "Studio Pro",
   description: "Frontend dashboard for a YouTube Shorts automation workflow."
 };
 

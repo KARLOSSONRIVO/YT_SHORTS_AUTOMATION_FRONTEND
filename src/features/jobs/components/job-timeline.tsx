@@ -13,7 +13,7 @@ export function JobTimeline({ jobs }: { jobs: Job[] }) {
       <div className="space-y-4">
         {jobs.length ? (
           jobs.map((job) => (
-            <div key={job.id} className="flex flex-col gap-3 rounded-3xl border border-border/80 bg-background/80 p-4 md:flex-row md:items-start md:justify-between">
+            <div key={job.id} className="flex flex-col gap-3 rounded-control border border-border bg-background/80 p-4 md:flex-row md:items-start md:justify-between">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">{job.type}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{job.queueName}</p>

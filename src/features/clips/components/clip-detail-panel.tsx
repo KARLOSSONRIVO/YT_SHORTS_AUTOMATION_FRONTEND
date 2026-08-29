@@ -72,7 +72,7 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
   return (
     <div className="space-y-6">
       {successToast ? (
-        <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow-lg">
+        <div className="fixed bottom-6 right-6 z-50 rounded-control border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 shadow-lg">
           {successToast}
         </div>
       ) : null}
@@ -91,15 +91,15 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
         />
         <p className="mt-4 text-sm text-muted-foreground">{previewMessage}</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl bg-background p-3">
+          <div className="rounded-control bg-background p-3">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Review</p>
             <p className="mt-2 text-sm font-semibold capitalize text-foreground">{clip.reviewStatus}</p>
           </div>
-          <div className="rounded-2xl bg-background p-3">
+          <div className="rounded-control bg-background p-3">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Publish</p>
             <p className="mt-2 text-sm font-semibold capitalize text-foreground">{clip.publishStatus}</p>
           </div>
-          <div className="rounded-2xl bg-background p-3">
+          <div className="rounded-control bg-background p-3">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Score</p>
             <p className="mt-2 text-sm font-semibold text-foreground">{clip.score}</p>
           </div>

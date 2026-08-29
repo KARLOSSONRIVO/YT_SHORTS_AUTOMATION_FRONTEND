@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { CloudUpload, ClipboardCheck, Send } from "lucide-react";
 
 export function AuthShell({
   title,
@@ -17,8 +18,8 @@ export function AuthShell({
   footerLinkText: string;
 }) {
   return (
-    <div className="min-h-screen bg-surface-base text-on-surface font-body overflow-x-hidden selection:bg-primary selection:text-white flex flex-col md:flex-row">
-      <section className="hidden md:flex flex-1 relative flex-col justify-between p-10 bg-surface-base overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground font-body overflow-x-hidden selection:bg-primary selection:text-white flex flex-col md:flex-row">
+      <section className="hidden md:flex flex-1 relative flex-col justify-between p-10 bg-background overflow-hidden">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary blur-[120px]"></div>
           <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full bg-accent blur-[100px]"></div>
@@ -31,18 +32,18 @@ export function AuthShell({
           </p>
         </div>
         <div className="relative z-10 grid grid-cols-3 gap-4">
-          <div className="bg-card p-6 rounded-xl transition-all hover:bg-secondary group cursor-default">
-            <span className="material-symbols-outlined text-accent mb-2 block">cloud_upload</span>
+          <div className="bg-card p-6 rounded-container transition-all hover:bg-secondary group cursor-default">
+            <CloudUpload className="text-accent mb-2 h-6 w-6" />
             <h3 className="font-heading font-semibold text-white text-base mb-1">Upload</h3>
             <p className="font-body text-sm text-muted-foreground">High-speed ingestion for long-form raw assets.</p>
           </div>
-          <div className="bg-card p-6 rounded-xl transition-all hover:bg-secondary group cursor-default">
-            <span className="material-symbols-outlined text-primary mb-2 block">rate_review</span>
+          <div className="bg-card p-6 rounded-container transition-all hover:bg-secondary group cursor-default">
+            <ClipboardCheck className="text-primary mb-2 h-6 w-6" />
             <h3 className="font-heading font-semibold text-white text-base mb-1">Review</h3>
             <p className="font-body text-sm text-muted-foreground">Frame-accurate feedback for creative teams.</p>
           </div>
-          <div className="bg-card p-6 rounded-xl transition-all hover:bg-secondary group cursor-default">
-            <span className="material-symbols-outlined text-ring mb-2 block">send</span>
+          <div className="bg-card p-6 rounded-container transition-all hover:bg-secondary group cursor-default">
+            <Send className="text-ring mb-2 h-6 w-6" />
             <h3 className="font-heading font-semibold text-white text-base mb-1">Publish</h3>
             <p className="font-body text-sm text-muted-foreground">One-click distribution to global platforms.</p>
           </div>
@@ -51,7 +52,7 @@ export function AuthShell({
       
       <section className="flex-1 flex items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-[440px]">
-          <div className="bg-card p-10 rounded-xl shadow-2xl border border-border/10">
+          <div className="bg-card p-10 rounded-container shadow-2xl border border-border/60">
             <div className="mb-10">
               <span className="font-heading font-semibold text-xs tracking-widest text-primary uppercase mb-2 block">STUDIO PRO</span>
               <h2 className="font-heading text-3xl font-bold text-white mb-2">{title}</h2>

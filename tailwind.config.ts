@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
@@ -37,16 +36,11 @@ const config: Config = {
         }
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)"
+        container: "1.75rem",
+        control: "0.75rem"
       },
       boxShadow: {
-        soft: "0 18px 48px -20px rgba(15, 23, 42, 0.28)"
-      },
-      backgroundImage: {
-        "dashboard-grid":
-          "linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px)"
+        soft: "0 18px 48px -20px rgba(0, 0, 0, 0.65)"
       }
     }
   },

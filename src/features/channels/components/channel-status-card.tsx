@@ -19,7 +19,7 @@ export function ChannelStatusCard({ channels }: { channels: Channel[] }) {
       {channels.length ? (
         <div className="space-y-3">
           {channels.map((channel) => (
-            <div key={channel.id} className="rounded-2xl border border-border bg-background p-4">
+            <div key={channel.id} className="rounded-control border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-lg font-semibold text-foreground">{channel.title}</p>

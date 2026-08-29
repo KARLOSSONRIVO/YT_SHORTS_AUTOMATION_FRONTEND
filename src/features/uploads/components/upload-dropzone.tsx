@@ -15,7 +15,7 @@ export function UploadDropzone({
   return (
     <label
       className={cn(
-        "flex cursor-pointer flex-col items-center justify-center rounded-[28px] border border-dashed px-6 py-10 text-center transition",
+        "flex cursor-pointer flex-col items-center justify-center rounded-container border border-dashed px-6 py-10 text-center transition",
         error ? "border-rose-300 bg-rose-50" : "border-border bg-card hover:bg-accent/40"
       )}
     >

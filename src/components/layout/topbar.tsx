@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, LogOut, Settings2 } from "lucide-react";
+import { Bell, LogOut, Menu, Settings2 } from "lucide-react";
 import { appRoutes } from "@/lib/constants/routes";
 import { useAuth } from "@/features/auth/components/auth-provider";
 
@@ -15,12 +15,34 @@ function getPageTitle(pathname: string) {
   return "Studio Pro";
 }
 
-export function Topbar({ pathname }: { pathname: string }) {
+export function Topbar({
+  pathname,
+  navOpen,
+  onOpenNav
+}: {
+  pathname: string;
+  navOpen?: boolean;
+  onOpenNav?: () => void;
+}) {
   const { logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-border/40 bg-background/80 px-10 py-5 backdrop-blur-md">
-      <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">{getPageTitle(pathname)}</h1>
+    <header className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-border/60 bg-background/80 px-4 lg:px-10 py-5 backdrop-blur-md">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onOpenNav}
+          aria-label="Open navigation"
+          aria-expanded={navOpen ?? false}
+          aria-controls="mobile-nav"
+          className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent lg:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+          {getPageTitle(pathname)}
+        </h1>
+      </div>
 
       <div className="flex items-center gap-3">
         <button aria-label="Notifications" className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent" title="Notifications">
@@ -36,7 +58,7 @@ export function Topbar({ pathname }: { pathname: string }) {
         </Link>
         <button
           aria-label="Log out"
-          className="ml-2 rounded-full border-l border-border/40 p-2 pl-5 text-muted-foreground transition-colors hover:text-accent"
+          className="ml-2 rounded-full border-l border-border/60 p-2 pl-5 text-muted-foreground transition-colors hover:text-accent"
           onClick={logout}
           title="Log out"
         >

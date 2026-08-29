@@ -49,7 +49,7 @@ function PublishedProjectCard({
   }
 
   return (
-    <div className="rounded-3xl border border-border bg-background">
+    <div className="rounded-container border border-border bg-background">
       <button
         className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left"
         onClick={onToggle}
@@ -99,7 +99,7 @@ function PublishedStoryRow({ story }: { story: Story }) {
   const videoUrl = story.platformUrl ?? (story.platformVideoId ? `https://www.youtube.com/watch?v=${story.platformVideoId}` : undefined);
 
   return (
-    <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
+    <div className="rounded-control border border-border bg-muted/20 px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="font-medium text-foreground">{story.title}</p>
@@ -128,7 +128,7 @@ function PublishedClipRow({ clip }: { clip: Clip }) {
     : undefined;
 
   return (
-    <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
+    <div className="rounded-control border border-border bg-muted/20 px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="font-medium text-foreground">{clip.title}</p>

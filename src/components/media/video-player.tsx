@@ -183,7 +183,7 @@ export function VideoPlayer({
       <div
         ref={containerRef}
         className={cn(
-          "group relative overflow-hidden rounded-[28px] border border-border/80 bg-slate-950 shadow-soft",
+          "group relative overflow-hidden rounded-container border border-border bg-slate-950 shadow-soft",
           isFullscreen && "h-screen w-screen rounded-none border-0",
           className
         )}
@@ -214,7 +214,7 @@ export function VideoPlayer({
       <div
         ref={containerRef}
         className={cn(
-          "group relative overflow-hidden rounded-[28px] border border-border/80 bg-slate-950 shadow-soft",
+          "group relative overflow-hidden rounded-container border border-border bg-slate-950 shadow-soft",
           isFullscreen && "h-screen w-screen rounded-none border-0",
           className
         )}
@@ -241,7 +241,7 @@ export function VideoPlayer({
           src={src}
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-[5.75rem] flex justify-center px-4">
-          <div className="max-w-[90%] rounded-[1.25rem] bg-black/58 px-4 py-3 text-center shadow-[0_16px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm">
+          <div className="max-w-[90%] rounded-control bg-black/58 px-4 py-3 text-center shadow-[0_16px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/60">9:16 Shorts Preview</p>
             <p className="text-base font-black uppercase leading-tight text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] sm:text-lg">
               {activeSubtitle?.text ?? "Subtitles will appear here during playback."}
@@ -318,7 +318,7 @@ export function VideoPlayer({
   return (
     <div
       className={cn(
-        "relative flex aspect-[9/16] items-center justify-center overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,rgba(30,41,59,0.94),rgba(17,24,39,0.98))] text-white",
+        "relative flex aspect-[9/16] items-center justify-center overflow-hidden rounded-container bg-[linear-gradient(180deg,rgba(30,41,59,0.94),rgba(17,24,39,0.98))] text-white",
         className
       )}
     >

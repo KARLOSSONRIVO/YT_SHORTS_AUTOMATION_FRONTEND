@@ -10,7 +10,7 @@ export function SubtitlePreview({ subtitle }: { subtitle?: ClipSubtitle }) {
       <div className="space-y-3">
         {subtitle?.segments?.length ? (
           subtitle.segments.slice(0, 6).map((segment, index) => (
-            <div key={`${segment.start}-${index}`} className="rounded-2xl bg-background px-4 py-3">
+            <div key={`${segment.start}-${index}`} className="rounded-control bg-background px-4 py-3">
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 {segment.start}s - {segment.end}s
               </p>

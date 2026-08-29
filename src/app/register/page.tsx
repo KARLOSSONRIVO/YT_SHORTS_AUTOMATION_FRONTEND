@@ -19,7 +19,7 @@ export default function RegisterPage() {
 
   return (
     <AuthShell
-      title="Create your Shorts Studio account"
+      title="Create your Studio Pro account"
       description="Start with a simple email/password account, then move directly into the dashboard flow."
       footerHref={appRoutes.login}
       footerLabel="Already have an account?"

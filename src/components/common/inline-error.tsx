@@ -11,7 +11,7 @@ export function InlineError({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-3xl border border-rose-200 bg-rose-50 p-4 text-rose-900">
+    <div className="flex items-start gap-3 rounded-container border border-rose-200 bg-rose-50 p-4 text-rose-900">
       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
       <div className="space-y-1">
         <p className="text-sm font-semibold">{title}</p>

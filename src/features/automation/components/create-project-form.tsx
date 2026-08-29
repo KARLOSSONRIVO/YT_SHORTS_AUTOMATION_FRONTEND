@@ -101,7 +101,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
       <CardContent className="grid gap-5 pt-6 md:grid-cols-2">
         <div className="space-y-3 md:col-span-2"><Label>Content Type</Label><div className="grid gap-3 md:grid-cols-3">
           {contentTypes.map((item)=><button type="button" key={item.value} onClick={()=>setType(item.value)}
-            className={"rounded-2xl border p-4 text-left transition "+(contentType===item.value?"border-primary bg-primary/10 ring-1 ring-primary":"border-border bg-muted/10 hover:bg-muted/30")}>
+            className={"rounded-control border p-4 text-left transition "+(contentType===item.value?"border-primary bg-primary/10 ring-1 ring-primary":"border-border bg-muted/10 hover:bg-muted/30")}>
             <span className="font-semibold">{item.label}</span><span className="mt-1 block text-xs text-muted-foreground">{item.description}</span></button>)}</div></div>
         <Field label="Project Name" wide><Input value={name} onChange={(event)=>setName(event.target.value)} placeholder="My daily Shorts project" maxLength={120}/></Field>
 
@@ -135,10 +135,10 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
           <p className="text-xs text-muted-foreground">{visualType==="IMAGE"?"Generated/licensed images with camera movement and transitions.":visualType==="ANIMATED"?"Motion prompts, animated scenes, graphics, and AI video providers.":"Chooses image or animation from the topic, niche, providers, and visual needs."}</p></Field>:null}
         <Field label={contentType==="CLIP_UPLOAD"?"Approval Mode":"Automation Mode"}><Select value={automationMode} onChange={(event)=>setAutomationMode(event.target.value as AutomationMode)}>
           <option value="approval_before_upload">Approval Before Upload</option><option value="fully_automatic">Fully Automatic</option><option value="draft_only">Draft Only</option></Select></Field>
-        <label className="flex items-center gap-3 self-end rounded-2xl border bg-muted/20 p-4 text-sm"><input type="checkbox" checked={automationEnabled} onChange={(event)=>setAutomationEnabled(event.target.checked)}/>
+        <label className="flex items-center gap-3 self-end rounded-control border bg-muted/20 p-4 text-sm"><input type="checkbox" checked={automationEnabled} onChange={(event)=>setAutomationEnabled(event.target.checked)}/>
           <span><span className="block font-semibold">{contentType==="CLIP_UPLOAD"?"Enable automatic clip queue":"Enable daily automation"}</span>
           <span className="text-xs text-muted-foreground">{contentType==="CLIP_UPLOAD"?"Upload the next eligible clip at the configured time.":"Create one unique eligible story per day."}</span></span></label>
-        {save.isError?<p className="md:col-span-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{save.error instanceof Error?save.error.message:"Project could not be saved."}</p>:null}
+        {save.isError?<p className="md:col-span-2 rounded-control border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{save.error instanceof Error?save.error.message:"Project could not be saved."}</p>:null}
         <div className="md:col-span-2 flex justify-end"><Button size="lg" disabled={!valid||save.isPending||phase!=="idle"} onClick={()=>save.mutate()}>
           {save.isPending?<><Loader2 className="animate-spin"/>Saving project...</>:contentType==="CLIP_UPLOAD"?"Create Project & Queue Clip":editProjectId?"Save Changes":"Create Project"}</Button></div>
       </CardContent></Card>
@@ -146,7 +146,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
 }
 
 function Field({label,wide,children}:{label:string;wide?:boolean;children:React.ReactNode}){return <div className={"space-y-2 "+(wide?"md:col-span-2":"")}><Label>{label}</Label>{children}</div>}
-function State({icon,text,action}:{icon:React.ReactNode;text:string;action?:React.ReactNode}){return <div className="flex min-h-10 items-center justify-between gap-3 rounded-xl border bg-muted/20 p-3 text-sm"><span className="flex items-center gap-2 text-muted-foreground">{icon}{text}</span>{action}</div>}
+function State({icon,text,action}:{icon:React.ReactNode;text:string;action?:React.ReactNode}){return <div className="flex min-h-10 items-center justify-between gap-3 rounded-control border bg-muted/20 p-3 text-sm"><span className="flex items-center gap-2 text-muted-foreground">{icon}{text}</span>{action}</div>}
 
 function savingSteps(phase:SavePhase,uploadsClip:boolean,editing:boolean):LoadingOverlayStep[]{
   const order:Array<Exclude<SavePhase,"idle">>=uploadsClip?["saving","uploading","opening"]:["saving","opening"];
@@ -173,7 +173,7 @@ function RedditFields({reddit,setReddit,approved,custom,setCustom,addCustom,togg
     <div className="grid gap-4 md:col-span-2 sm:grid-cols-3"><Field label="Minimum Score"><Input type="number" min={0} value={reddit.minimumScore} onChange={(event)=>setReddit((value)=>({...value,minimumScore:Number(event.target.value)}))}/></Field>
       <Field label="Minimum Comments"><Input type="number" min={0} value={reddit.minimumComments} onChange={(event)=>setReddit((value)=>({...value,minimumComments:Number(event.target.value)}))}/></Field>
       <Field label="Minimum Body Length"><Input type="number" min={80} value={reddit.minimumBodyLength} onChange={(event)=>setReddit((value)=>({...value,minimumBodyLength:Number(event.target.value)}))}/></Field></div>
-    <p className="md:col-span-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">Uses the official Reddit API. Pinned, promoted, removed, unsafe, NSFW, low-quality, and previously used posts are filtered before ranking.</p></>;
+    <p className="md:col-span-2 rounded-control border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">Uses the official Reddit API. Pinned, promoted, removed, unsafe, NSFW, low-quality, and previously used posts are filtered before ranking.</p></>;
 }
 
 function ClipFields({video,setVideo,previewUrl,thumbnail,setThumbnail,subtitles,setSubtitles,title,setTitle,description,setDescription,hashtags,setHashtags,privacy,setPrivacy,audience,setAudience}:{
@@ -182,10 +182,10 @@ function ClipFields({video,setVideo,previewUrl,thumbnail,setThumbnail,subtitles,
   title:string;setTitle:(value:string)=>void;description:string;setDescription:(value:string)=>void;hashtags:string;setHashtags:(value:string)=>void;
   privacy:"private"|"public"|"unlisted";setPrivacy:(value:"private"|"public"|"unlisted")=>void;
   audience:"not_made_for_kids"|"made_for_kids";setAudience:(value:"not_made_for_kids"|"made_for_kids")=>void}){
-  return <><div className="space-y-3 md:col-span-2"><Label>Upload Video File</Label><label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed bg-muted/10 p-6 text-center">
+  return <><div className="space-y-3 md:col-span-2"><Label>Upload Video File</Label><label className="flex cursor-pointer flex-col items-center justify-center rounded-container border border-dashed bg-muted/10 p-6 text-center">
     <Upload className="mb-2 h-6 w-6 text-primary"/><span className="font-semibold">{video?"Replace video":"Choose a local video"}</span><span className="text-xs text-muted-foreground">MP4, MOV, WebM, or MKV. Media is validated and hash-checked.</span>
     <input className="hidden" type="file" accept="video/mp4,video/quicktime,video/webm,video/x-matroska" onChange={(event)=>setVideo(event.target.files?.[0])}/></label>
-    {video?<div className="rounded-xl border p-3"><p className="mb-2 text-sm font-medium">{video.name}</p>{previewUrl?<video className="max-h-72 w-full rounded-lg bg-black" controls src={previewUrl}/>:null}</div>:null}</div>
+    {video?<div className="rounded-control border p-3"><p className="mb-2 text-sm font-medium">{video.name}</p>{previewUrl?<video className="max-h-72 w-full rounded-control bg-black" controls src={previewUrl}/>:null}</div>:null}</div>
     <Field label="Optional Thumbnail"><Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event)=>setThumbnail(event.target.files?.[0])}/>{thumbnail?<p className="text-xs text-muted-foreground">{thumbnail.name}</p>:null}</Field>
     <Field label="Optional Subtitles"><Input type="file" accept=".srt,.vtt,text/vtt,application/x-subrip" onChange={(event)=>setSubtitles(event.target.files?.[0])}/>{subtitles?<p className="text-xs text-muted-foreground">{subtitles.name}</p>:null}</Field>
     <Field label="Video Title"><Input value={title} onChange={(event)=>setTitle(event.target.value)} maxLength={100} placeholder="Short video title"/></Field>
