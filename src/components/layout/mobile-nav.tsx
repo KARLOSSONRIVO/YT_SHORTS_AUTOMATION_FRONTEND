@@ -25,7 +25,7 @@ export function MobileNav({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm lg:hidden" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm lg:hidden" />
         <Dialog.Content
           id="mobile-nav"
           aria-label="Main navigation"

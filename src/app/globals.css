@@ -4,25 +4,27 @@
 
 @layer base {
   :root {
-    --background: 218 29% 6%;
-    --foreground: 0 0% 100%;
-    --card: 217 24% 11%;
-    --card-foreground: 0 0% 100%;
-    --popover: 217 24% 11%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 37 76% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 219 25% 16%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 218 11% 33%;
-    --muted-foreground: 218 15% 65%;
-    --accent: 187 100% 50%;
-    --accent-foreground: 218 29% 6%;
+    /* Aurora — indigo-charcoal ground, soft-gold primary, violet + teal accents */
+    --background: 231 23% 6%;
+    --foreground: 225 27% 94%;
+    --card: 234 21% 9%;
+    --card-foreground: 225 27% 94%;
+    --popover: 234 21% 9%;
+    --popover-foreground: 225 27% 94%;
+    --primary: 34 65% 73%;
+    --primary-foreground: 37 56% 7%;
+    --secondary: 232 17% 13%;
+    --secondary-foreground: 225 27% 94%;
+    --muted: 230 12% 22%;
+    --muted-foreground: 228 12% 63%;
+    --accent: 248 87% 76%;
+    --accent-foreground: 231 23% 6%;
+    --accent-2: 172 61% 59%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 219 25% 16%;
-    --input: 217 24% 11%;
-    --ring: 37 76% 53%;
+    --border: 232 14% 17%;
+    --input: 234 20% 12%;
+    --ring: 248 87% 76%;
   }
 
   * {
@@ -36,6 +38,11 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  ::selection {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
 }
 
 @layer utilities {
@@ -46,12 +53,21 @@
   .font-body {
     font-family: var(--font-body), sans-serif;
   }
-  
-  .neon-glow-primary {
-    box-shadow: 0 0 15px hsl(var(--primary) / 0.4);
+
+  .font-display {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
   }
-  
+
+  .font-mono {
+    font-family: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+  }
+
+  /* Aurora depth: soft luminous glow, not hard neon */
+  .neon-glow-primary {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.18);
+  }
+
   .neon-glow-accent:focus-within {
-    box-shadow: 0 0 10px hsl(var(--accent) / 0.3);
+    box-shadow: 0 0 24px hsl(var(--accent) / 0.22);
   }
 }

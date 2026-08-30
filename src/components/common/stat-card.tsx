@@ -22,7 +22,7 @@ export function StatCard({
       </span>
 
       <div className="mt-2 flex items-baseline gap-4">
-        <span className="font-heading text-4xl font-bold text-primary">{value}</span>
+        <span className="font-display text-4xl font-medium text-primary">{value}</span>
         {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
       </div>
     </Card>

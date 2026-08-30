@@ -40,10 +40,10 @@ export function SidebarContent({
   const initials = initialsFrom(user?.displayName, user?.email);
 
   return (
-    <div className="flex h-full flex-col py-6 px-4">
+    <div className="flex h-full flex-col bg-gradient-to-b from-secondary/25 via-transparent to-transparent py-6 px-4">
       <div className="mb-10 px-2">
-        <h1 className="font-heading text-2xl font-bold text-primary tracking-tight">Studio Pro</h1>
-        <p className="font-body text-sm text-muted-foreground">Automation Suite</p>
+        <h1 className="font-display text-[1.6rem] font-medium tracking-tight text-primary">Studio Pro</h1>
+        <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-muted-foreground">Automation Suite</p>
       </div>
 
       <nav className="flex-grow flex flex-col gap-2">
@@ -57,10 +57,10 @@ export function SidebarContent({
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-control font-body transition-all duration-200 ease-in-out",
+                "relative flex items-center gap-4 px-4 py-3 rounded-control font-body transition-all duration-200 ease-in-out",
                 isActive
-                  ? "text-primary font-bold border-r-2 border-accent bg-card"
-                  : "text-muted-foreground hover:bg-card hover:text-foreground"
+                  ? "bg-secondary text-primary font-semibold before:absolute before:left-0 before:top-1/2 before:h-6 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-gradient-to-b before:from-primary before:to-accent before:content-['']"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
@@ -79,14 +79,14 @@ export function SidebarContent({
         </Button>
 
         <div className="mt-6 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-card overflow-hidden flex items-center justify-center text-primary font-bold border border-border">
+          <div className="h-10 w-10 rounded-full bg-secondary overflow-hidden flex items-center justify-center text-primary font-bold border border-border">
             {initials}
           </div>
           <div>
             <p className="font-body text-sm font-semibold text-foreground">
               {user?.displayName ?? "Workspace"}
             </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">
+            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">
               {user?.email ?? "Not signed in"}
             </p>
           </div>
