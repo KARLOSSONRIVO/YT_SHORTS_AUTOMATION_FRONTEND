@@ -133,3 +133,25 @@ test("Upload Now is shown only for stories with a scheduled upload", async () =>
   assert.doesNotMatch(renderStory({}), /Upload Now/);
   assert.doesNotMatch(renderStory({ status: "awaiting_approval", scheduledUploadTime: "2026-08-20T11:00:00.000Z" }), /Upload Now/);
 });
+
+test("serialized story setup exposes an episode-count field only for its niche", async () => {
+  const source = await readFile(
+    path.join(
+      testDirectory,
+      "..",
+      "src",
+      "features",
+      "automation",
+      "components",
+      "create-project-form.tsx",
+    ),
+    "utf8",
+  );
+
+  assert.match(source, /original_serialized_mystery/);
+  assert.match(source, /Episodes per series/);
+  assert.match(source, /episodesPerSeries/);
+  assert.match(source, /A new story starts automatically after the final episode/);
+  assert.match(source, /availableNiches/);
+  assert.match(source, /Legacy niche:/);
+});

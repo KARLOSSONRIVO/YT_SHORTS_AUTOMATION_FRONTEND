@@ -60,7 +60,7 @@ export interface Project {
   platforms?: Array<"youtube">;
   targetDurationSeconds?: number;
   stylePreset?: string;
-  scriptFramework?: "psychology_truth" | "history_story";
+  scriptFramework?: "psychology_truth" | "history_story" | "reddit_story" | "serialized_story";
   facelessRenderMode?: "image_story" | "animation_story" | "background_video";
   voice?: string;
   status: ProjectStatus;

@@ -9,6 +9,20 @@ export interface Niche {
   contentRestrictions: string[]; preferredTopicCategories: string[]; topicCategories: string[];
   preferredStoryFormats: StoryFormat[]; allowedStoryFormats: StoryFormat[]; hashtagStrategy: string[];
   researchRequirements: string[]; language: string; defaultLanguage: string; region: string; targetRegion: string;
+  isFictional?: boolean;
+}
+export interface SerializedStoryState {
+  episodesPerSeries: number;
+  nextSeriesNumber: number;
+  nextEpisodeNumber: number;
+  seriesTitle?: string;
+  premise?: string;
+  setting?: string;
+  characterNotes?: string;
+  lastEpisodeSummary?: string;
+  queuedEpisodeTitle?: string;
+  queuedEpisodeTopic?: string;
+  queuedEpisodePromise?: string;
 }
 export interface RedditConfig {
   sourceMode: 'ONE_SUBREDDIT' | 'MULTIPLE_SUBREDDITS' | 'AUTO'; subreddits: string[];
@@ -22,6 +36,7 @@ export interface ProjectAutomation {
   language: string; timezone: string; uploadTime: string; durationSeconds: number;
   automationMode: AutomationMode; automationEnabled: boolean; automationStatus: 'active' | 'paused' | 'running' | 'error';
   nextRunAt?: string; lastRunAt?: string; lastSuccessfulGenerationAt?: string; lastUploadAt?: string; createdAt: string; updatedAt: string;
+  serializedStory?: SerializedStoryState;
 }
 export interface AccountValidation { id: string; accountName: string; channelName: string; externalChannelId: string; status: 'connected' | 'disconnected'; authenticationActive: boolean; needsRefresh: boolean; }
 export interface Story {
@@ -47,5 +62,5 @@ export interface ProjectDashboardData {
 export interface ProjectInput {
   name: string; contentType: ContentType; nicheId?: string; accountId: string; language: string;
   uploadTime: string; timezone: string; visualType: VisualType; automationMode: AutomationMode;
-  automationEnabled: boolean; redditConfig?: RedditConfig;
+  automationEnabled: boolean; episodesPerSeries?: number; redditConfig?: RedditConfig;
 }

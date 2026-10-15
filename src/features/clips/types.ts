@@ -2,6 +2,7 @@ export interface Clip {
   id: string;
   projectId: string;
   title: string;
+  hashtags?: string;
   description?: string;
   startTimeSeconds: number;
   endTimeSeconds: number;

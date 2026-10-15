@@ -29,7 +29,7 @@ export function UploadForm() {
       description: "",
       hashtags: "shorts",
       targetClipCount: 5,
-      fontFamily: "Montserrat ExtraBold",
+      fontFamily: "DejaVu Sans",
       fontSize: 64,
       fillColor: "#FFFFFF",
       strokeColor: "#000000",
@@ -114,7 +114,7 @@ export function UploadForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="fontFamily">Font family</Label>
-                    <Input id="fontFamily" placeholder="Montserrat ExtraBold" {...form.register("fontFamily")} />
+                    <Input id="fontFamily" placeholder="DejaVu Sans" {...form.register("fontFamily")} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="fontSize">Font size</Label>

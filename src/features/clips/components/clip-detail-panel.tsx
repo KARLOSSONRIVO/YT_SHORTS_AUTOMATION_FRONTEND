@@ -123,7 +123,7 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
           }}
         >
           <DialogTrigger asChild>
-            <Button className="mt-4 w-full" disabled={!canOpenPublishForm} variant="outline">
+            <Button className="mt-4 w-full" disabled={!canOpenPublishForm} type="button" variant="outline">
               {clip.publishStatus === "published" ? "Already Published" : "Open Publish Form"}
             </Button>
           </DialogTrigger>
@@ -143,7 +143,7 @@ export function ClipDetailPanel({ clip }: { clip?: Clip }) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Publish clip</DialogTitle>
-              <DialogDescription>Keep publishing in a drawer or dialog so review flow stays uninterrupted.</DialogDescription>
+              <DialogDescription>Review the title, tags, and privacy before uploading this clip.</DialogDescription>
             </DialogHeader>
             <PublishForm
               clip={clip}

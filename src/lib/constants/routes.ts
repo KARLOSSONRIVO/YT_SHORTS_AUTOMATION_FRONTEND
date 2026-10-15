@@ -3,6 +3,7 @@ export const appRoutes = {
   register: "/register",
   dashboard: "/dashboard",
   createProject: "/projects/new",
+  youtubeSource: "/projects/new/youtube-source",
   projects: "/projects",
   reviewQueue: "/projects",
   publish: "/publish",

@@ -1,5 +1,5 @@
-import { apiUpload } from "@/lib/api/client";
-import type { UploadResponse } from "../types";
+import { apiRequest, apiUpload } from "@/lib/api/client";
+import type { UploadResponse, YouTubeSourceInput } from "../types";
 
 export async function createUpload(input: {
   title: string;
@@ -32,4 +32,11 @@ export async function createUpload(input: {
   formData.append("video", input.video);
 
   return apiUpload<UploadResponse>("/upload", formData);
+}
+
+export function createYouTubeSourceUpload(input: YouTubeSourceInput) {
+  return apiRequest<UploadResponse>("/upload/source", {
+    method: "POST",
+    json: input
+  });
 }

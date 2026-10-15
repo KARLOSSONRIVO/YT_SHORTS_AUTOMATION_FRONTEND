@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import type { Channel } from "@/features/channels/types";
 import type { Clip } from "@/features/clips/types";
 import { useProjectDetailQuery } from "@/features/projects/hooks/use-project-detail-query";
 import { usePublishClipMutation } from "../hooks/use-publish-clip-mutation";
-import { mergeDescriptionWithHashtags } from "../lib/hashtags";
+import { formatHashtags } from "../lib/hashtags";
+import { getSuggestedPublishMetadata } from "../lib/clip-metadata";
 import { publishClipSchema, type PublishClipValues } from "../schemas/publish-clip-schema";
 
 export function PublishForm({
@@ -30,6 +30,9 @@ export function PublishForm({
 }) {
   const mutation = usePublishClipMutation(projectId);
   const projectQuery = useProjectDetailQuery(projectId ?? "");
+  const suggestedMetadata = getSuggestedPublishMetadata(clip, projectQuery.data?.hashtags);
+  const initializedClipId = useRef<string | null>(null);
+  const suggestedHashtags = useRef(suggestedMetadata.hashtags);
   const isPublishable =
     clip.reviewStatus === "approved" &&
     clip.renderStatus === "rendered" &&
@@ -39,9 +42,8 @@ export function PublishForm({
     defaultValues: {
       clipId: clip.id,
       channelId: "",
-      title: clip.title,
-      description: clip.description || "",
-      hashtags: "shorts",
+      title: suggestedMetadata.title,
+      hashtags: suggestedMetadata.hashtags,
       privacyStatus: "private"
     }
   });
@@ -53,38 +55,29 @@ export function PublishForm({
   }, [channels, form]);
 
   useEffect(() => {
-    const savedHashtags = projectQuery.data?.hashtags?.trim();
-    if (!savedHashtags) {
+    if (initializedClipId.current === clip.id) {
       return;
     }
 
-    form.setValue("hashtags", savedHashtags, { shouldValidate: false });
-  }, [form, projectQuery.data?.hashtags]);
+    initializedClipId.current = clip.id;
+    suggestedHashtags.current = suggestedMetadata.hashtags;
+    form.reset({
+      clipId: clip.id,
+      channelId: form.getValues("channelId"),
+      title: suggestedMetadata.title,
+      hashtags: suggestedMetadata.hashtags,
+      privacyStatus: "private"
+    });
+  }, [clip.id, form, suggestedMetadata.hashtags, suggestedMetadata.title]);
 
   useEffect(() => {
-    const projectTitle = projectQuery.data?.title?.trim();
-    if (!projectTitle) {
+    if (!suggestedMetadata.hashtags || form.getValues("hashtags") !== suggestedHashtags.current) {
       return;
     }
 
-    const currentTitle = form.getValues("title").trim();
-    if (!currentTitle || currentTitle === clip.title.trim()) {
-      form.setValue("title", projectTitle, { shouldValidate: false });
-    }
-  }, [clip.title, form, projectQuery.data?.title]);
-
-  useEffect(() => {
-    const projectDescription = projectQuery.data?.description?.trim();
-    if (!projectDescription) {
-      return;
-    }
-
-    const currentDescription = form.getValues("description").trim();
-    const clipDescription = (clip.description ?? "").trim();
-    if (!currentDescription || currentDescription === clipDescription) {
-      form.setValue("description", projectDescription, { shouldValidate: false });
-    }
-  }, [clip.description, form, projectQuery.data?.description]);
+    suggestedHashtags.current = suggestedMetadata.hashtags;
+    form.setValue("hashtags", suggestedMetadata.hashtags, { shouldValidate: false });
+  }, [form, suggestedMetadata.hashtags]);
 
   useEffect(() => {
     onPendingChange?.(mutation.isPending);
@@ -93,7 +86,7 @@ export function PublishForm({
   const onSubmit = form.handleSubmit(async (values) => {
     const result = await mutation.mutateAsync({
       ...values,
-      description: mergeDescriptionWithHashtags(values.description ?? "", values.hashtags)
+      description: formatHashtags(values.hashtags)
     });
     onSuccess?.(result);
   });
@@ -125,10 +118,6 @@ export function PublishForm({
       <div className="space-y-2">
         <Label htmlFor="title">Short title</Label>
         <Input id="title" {...form.register("title")} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea id="description" {...form.register("description")} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="hashtags">Hashtags</Label>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, RefreshCw, Upload } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,14 +16,15 @@ import { useChannelsQuery } from "@/features/channels/hooks/use-channels-query";
 import { appRoutes } from "@/lib/constants/routes";
 import { createAutomationProject, getApprovedSubreddits, getAutomationProject, getNiches, seedNiches,
   updateAutomationProject, uploadQueuedClip, validateAccount } from "../api";
-import type { AutomationMode, ContentType, ProjectInput, RedditConfig, VisualType } from "../types";
+import type { AutomationMode, ContentType, Niche, ProjectInput, RedditConfig, VisualType } from "../types";
 
 const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Manila";
 const today = new Date().toISOString().slice(0, 10);
+const ORIGINAL_SERIALIZED_MYSTERY_NICHE_ID = "original_serialized_mystery";
 const contentTypes: Array<{value:ContentType;label:string;description:string}> = [
   { value: "FACELESS_NICHE", label: "Faceless Niche Story", description: "Generate a unique researched story each day." },
   { value: "REDDIT_STORY", label: "Reddit Story", description: "Transform an eligible Reddit submission over a random background-video segment." },
-  { value: "CLIP_UPLOAD", label: "Clip Upload", description: "Queue your own video without story generation." }
+  { value: "CLIP_UPLOAD", label: "Upload Finished Clip", description: "Queue an already-rendered video without story generation." }
 ];
 const defaultReddit: RedditConfig = {
   sourceMode: "AUTO", subreddits: [], sortMethod: "BEST_ELIGIBLE", minimumScore: 50,
@@ -30,6 +32,7 @@ const defaultReddit: RedditConfig = {
   excludeLocked: true, contentFilters: [], attributionMode: "link", allowCrossAccountReuse: false
 };
 type SavePhase = "idle" | "saving" | "uploading" | "opening";
+type NicheOption = Pick<Niche, "id" | "name" | "description" | "active"> & { defaultLanguage?: string };
 
 export function CreateProjectForm({ editProjectId }: { editProjectId?: string }) {
   const router=useRouter(); const queryClient=useQueryClient(); const channels=useChannelsQuery();
@@ -38,6 +41,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
   const existing=useQuery({queryKey:["automation-project",editProjectId],queryFn:()=>getAutomationProject(editProjectId!),enabled:Boolean(editProjectId)});
   const [contentType,setContentType]=useState<ContentType>("FACELESS_NICHE");
   const [name,setName]=useState(""); const [nicheId,setNicheId]=useState(""); const [accountId,setAccountId]=useState("");
+  const [episodesPerSeries,setEpisodesPerSeries]=useState(3);
   const [language,setLanguage]=useState("en"); const [uploadTime,setUploadTime]=useState("19:00"); const [timezone,setTimezone]=useState(detectedTimezone);
   const [visualType,setVisualType]=useState<VisualType>("AUTO"); const [automationMode,setAutomationMode]=useState<AutomationMode>("approval_before_upload");
   const [automationEnabled,setAutomationEnabled]=useState(true); const [reddit,setReddit]=useState<RedditConfig>(defaultReddit);
@@ -49,7 +53,16 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
   const [audience,setAudience]=useState<"not_made_for_kids"|"made_for_kids">("not_made_for_kids");
   const previewUrl=useMemo(()=>video?URL.createObjectURL(video):undefined,[video]);
   useEffect(()=>()=>{if(previewUrl)URL.revokeObjectURL(previewUrl)},[previewUrl]);
-  const selectedNiche=niches.data?.niches.find((item)=>item.id===nicheId);
+  const availableNiches=useMemo<NicheOption[]>(()=>{
+    const focused=niches.data?.niches??[];
+    const legacyId=existing.data?.contentType==="FACELESS_NICHE"?existing.data.nicheId:undefined;
+    if(!legacyId||focused.some((item)=>item.id===legacyId))return focused;
+    return [...focused,{id:legacyId,name:`Legacy niche: ${legacyId}`,description:"This existing project keeps its original niche. Choose one of the focused niches only when creating a new project.",active:true,defaultLanguage:existing.data?.language}];
+  },[niches.data?.niches,existing.data?.contentType,existing.data?.nicheId,existing.data?.language]);
+  const selectedNiche=availableNiches.find((item)=>item.id===nicheId);
+  const isSerializedStoryNiche=contentType==="FACELESS_NICHE"&&nicheId===ORIGINAL_SERIALIZED_MYSTERY_NICHE_ID;
+  const serializedStoryStarted=Boolean(existing.data?.serializedStory&&(
+    existing.data.serializedStory.nextSeriesNumber>1||existing.data.serializedStory.nextEpisodeNumber>1||existing.data.serializedStory.seriesTitle));
   const selectedAccount=channels.data?.find((channel)=>channel.id===accountId);
   const accountCheck=useQuery({queryKey:["account-validation",accountId],queryFn:()=>validateAccount(accountId),enabled:Boolean(accountId),retry:1});
 
@@ -57,15 +70,19 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
     setAccountId(p.accountId);setLanguage(p.language);setUploadTime(p.uploadTime);setTimezone(p.timezone);
     setVisualType(p.contentType==="FACELESS_NICHE"?p.visualType??"AUTO":"AUTO");setAutomationMode(p.automationMode);setAutomationEnabled(p.automationEnabled)},[existing.data]);
 
+  useEffect(()=>{if(existing.data?.serializedStory)setEpisodesPerSeries(existing.data.serializedStory.episodesPerSeries)},[existing.data]);
+
   useEffect(()=>{if(contentType!=="FACELESS_NICHE"||!nicheId||!accountId)return;const channel=channels.data?.find((item)=>item.id===accountId);
     if(channel&&!channel.nicheLockExempt&&channel.nicheId&&channel.nicheId!==nicheId)setAccountId("")},[contentType,nicheId,accountId,channels.data]);
 
   const typeValid=contentType==="FACELESS_NICHE"?Boolean(nicheId&&selectedNiche?.active):
     contentType==="REDDIT_STORY"?Boolean(reddit.sourceMode==="AUTO"||reddit.subreddits.length):Boolean(video||editProjectId)&&videoTitle.trim().length>=2;
   const valid=Boolean(name.trim().length>=2&&accountId&&language&&timezone&&/^([01]\d|2[0-3]):[0-5]\d$/.test(uploadTime)&&
-    selectedAccount?.status==="connected"&&accountCheck.data?.authenticationActive&&typeValid);
+    selectedAccount?.status==="connected"&&accountCheck.data?.authenticationActive&&typeValid&&
+    (!isSerializedStoryNiche||(Number.isInteger(episodesPerSeries)&&episodesPerSeries>=1&&episodesPerSeries<=12)));
   const payload:ProjectInput={name:name.trim(),contentType,nicheId:contentType==="FACELESS_NICHE"?nicheId:undefined,accountId,language,
     uploadTime,timezone,visualType:contentType==="FACELESS_NICHE"?visualType:"AUTO",automationMode,automationEnabled,
+    episodesPerSeries:isSerializedStoryNiche?episodesPerSeries:undefined,
     redditConfig:contentType==="REDDIT_STORY"?reddit:undefined};
 
   const save=useMutation({mutationFn:async()=>{
@@ -82,7 +99,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
     return project;
   },onSuccess:(project)=>{setPhase("opening");router.push(appRoutes.projects+"/"+project.id)},onError:()=>setPhase("idle")});
   const seed=useMutation({mutationFn:seedNiches,onSuccess:async()=>{await queryClient.invalidateQueries({queryKey:["project-niches"]});await niches.refetch()}});
-  const selectNiche=(value:string)=>{setNicheId(value);const niche=niches.data?.niches.find((item)=>item.id===value);if(niche)setLanguage(niche.defaultLanguage)};
+  const selectNiche=(value:string)=>{setNicheId(value);const niche=availableNiches.find((item)=>item.id===value);if(niche?.defaultLanguage)setLanguage(niche.defaultLanguage)};
   const setType=(value:ContentType)=>{setContentType(value);if(value!=="FACELESS_NICHE")setNicheId("");if(value!=="FACELESS_NICHE")setVisualType("AUTO")};
   const toggleSubreddit=(value:string)=>setReddit((current)=>({...current,subreddits:current.subreddits.includes(value)?current.subreddits.filter((item)=>item!==value):[...current.subreddits,value]}));
   const addCustom=()=>{const value=customSubreddit.trim().replace(/^r\//i,"");if(value&&!reddit.subreddits.includes(value)){toggleSubreddit(value);setCustomSubreddit("")}};
@@ -93,9 +110,10 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
       description={phase==="uploading"?"Keep this tab open while your video uploads and is hash-checked.":
         phase==="opening"?"Taking you to the project workspace.":"Validating your channel and scheduling the project. This can take a few moments."}
       steps={savingSteps(phase,contentType==="CLIP_UPLOAD"&&Boolean(video),Boolean(editProjectId))}/>
-    <div><p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Unified content automation</p>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Unified content automation</p>
       <h1 className="mt-2 font-heading text-3xl font-bold">{editProjectId?"Edit Project":"Create Project"}</h1>
       <p className="mt-2 max-w-3xl text-muted-foreground">Create niche stories, transformed Reddit stories, or scheduled clip uploads in one shared project system.</p></div>
+      {!editProjectId?<Button type="button" asChild variant="outline"><Link href={appRoutes.youtubeSource}>Analyze a YouTube link</Link></Button>:null}</div>
     <Card className="overflow-hidden"><CardHeader className="border-b border-border/60 bg-muted/20"><CardTitle>Project setup</CardTitle>
       <CardDescription>Only settings relevant to the selected content type are shown.</CardDescription></CardHeader>
       <CardContent className="grid gap-5 pt-6 md:grid-cols-2">
@@ -110,8 +128,13 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
           niches.isError?<State icon={<AlertTriangle/>} text="Niche profiles could not be loaded." action={<Button type="button" size="sm" variant="outline" onClick={()=>niches.refetch()}><RefreshCw/>Retry</Button>}/>:
           !niches.data?.niches.length?<State icon={<AlertTriangle/>} text="No niche profiles exist." action={<Button type="button" size="sm" onClick={()=>seed.mutate()} disabled={seed.isPending}>{seed.isPending?"Seeding...":"Seed Default Niches"}</Button>}/>:
           <><Select value={nicheId} onChange={(event)=>selectNiche(event.target.value)}><option value="">Choose a niche profile</option>
-            {niches.data.niches.map((niche)=><option key={niche.id} value={niche.id}>{niche.name}</option>)}</Select>
+            {availableNiches.map((niche)=><option key={niche.id} value={niche.id}>{niche.name}</option>)}</Select>
             {selectedNiche?<p className="text-xs text-muted-foreground">{selectedNiche.description}</p>:null}</>}</Field>:null}
+
+        {isSerializedStoryNiche?<Field label="Episodes per series"><Input type="number" min={1} max={12} step={1} value={episodesPerSeries}
+          disabled={Boolean(editProjectId&&serializedStoryStarted)} onChange={(event)=>setEpisodesPerSeries(Number(event.target.value))}/>
+          <p className="text-xs text-muted-foreground">Choose how many episodes belong to each story. A new story starts automatically after the final episode.</p>
+          {editProjectId&&serializedStoryStarted?<p className="text-xs text-amber-300">Locked after the series begins so its ending stays consistent.</p>:null}</Field>:null}
 
         {contentType==="REDDIT_STORY"?<RedditFields reddit={reddit} setReddit={setReddit} approved={approved.data??[]} custom={customSubreddit}
           setCustom={setCustomSubreddit} addCustom={addCustom} toggle={toggleSubreddit} loading={approved.isPending} error={approved.isError}/>:null}
@@ -139,7 +162,7 @@ export function CreateProjectForm({ editProjectId }: { editProjectId?: string })
           <span><span className="block font-semibold">{contentType==="CLIP_UPLOAD"?"Enable automatic clip queue":"Enable daily automation"}</span>
           <span className="text-xs text-muted-foreground">{contentType==="CLIP_UPLOAD"?"Upload the next eligible clip at the configured time.":"Create one unique eligible story per day."}</span></span></label>
         {save.isError?<p className="md:col-span-2 rounded-control border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{save.error instanceof Error?save.error.message:"Project could not be saved."}</p>:null}
-        <div className="md:col-span-2 flex justify-end"><Button size="lg" disabled={!valid||save.isPending||phase!=="idle"} onClick={()=>save.mutate()}>
+        <div className="md:col-span-2 flex justify-end"><Button type="button" size="lg" disabled={!valid||save.isPending||phase!=="idle"} onClick={()=>save.mutate()}>
           {save.isPending?<><Loader2 className="animate-spin"/>Saving project...</>:contentType==="CLIP_UPLOAD"?"Create Project & Queue Clip":editProjectId?"Save Changes":"Create Project"}</Button></div>
       </CardContent></Card>
   </div>;
