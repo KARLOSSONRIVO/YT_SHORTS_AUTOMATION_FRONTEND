@@ -1,214 +1,241 @@
 "use client";
-
+import { useState } from "react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { ExternalLink, Send, Film } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionCard } from "@/components/common/section-card";
+import { EmptyState } from "@/components/common/empty-state";
+import { LoadFailure } from "@/components/common/load-failure";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { VideoPlayer } from "@/components/media/video-player";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { useChannelsQuery } from "@/features/channels/hooks/use-channels-query";
 import { useProjectClipsQuery } from "@/features/clips/hooks/use-project-clips-query";
-import type { Clip } from "@/features/clips/types";
 import { PublishForm } from "@/features/publishing/components/publish-form";
-import { getProjectStories } from "@/features/automation/api";
-import type { Story } from "@/features/automation/types";
-import { publishedFacelessStories } from "@/features/publishing/lib/published-stories";
 import { useProjectsQuery } from "@/features/projects/hooks/use-projects-query";
-import type { Project } from "@/features/projects/types";
-
-function PublishedProjectCard({
-  project,
-  expanded,
-  onToggle
-}: {
-  project: Project;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const clipsQuery = useProjectClipsQuery(project.projectType === "uploaded_video" ? project.id : "");
-  const storiesQuery = useQuery({
-    queryKey: ["project-stories", project.id],
-    queryFn: () => getProjectStories(project.id),
-    enabled: project.projectType === "faceless_story"
-  });
-
-  const publishedClips = useMemo(
-    () => (project.projectType === "uploaded_video" ? (clipsQuery.data ?? []).filter((clip) => clip.publishStatus === "published") : []),
-    [clipsQuery.data, project.projectType]
-  );
-  const publishedStories = useMemo(
-    () => (project.projectType === "faceless_story" ? publishedFacelessStories(storiesQuery.data ?? []) : []),
-    [project.projectType, storiesQuery.data]
-  );
-
-  const hasPublishedItems =
-    publishedClips.length > 0 || publishedStories.length > 0;
-
-  if (!hasPublishedItems) {
-    return null;
-  }
-
-  return (
-    <div className="rounded-container border border-border bg-background">
-      <button
-        className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left"
-        onClick={onToggle}
-        type="button"
-      >
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-border px-2 py-0.5 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              {project.projectType === "faceless_story" ? "Faceless" : "Clipping"}
-            </span>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-              {project.projectType === "faceless_story"
-                ? `${publishedStories.length} published video${publishedStories.length === 1 ? "" : "s"}`
-                : `${publishedClips.length} published clip${publishedClips.length === 1 ? "" : "s"}`}
-            </span>
-          </div>
-          <p className="text-lg font-semibold text-foreground">{project.title}</p>
-          <p className="text-sm text-muted-foreground">
-            {expanded ? "Click to hide published items." : "Click to show published items for this project."}
-          </p>
-        </div>
-        <span className="text-sm font-medium text-primary">{expanded ? "Hide" : "Open"}</span>
-      </button>
-
-      {expanded ? (
-        <div className="border-t border-border px-5 py-4">
-          {project.projectType === "uploaded_video" ? (
-            <div className="space-y-3">
-              {publishedClips.map((clip) => (
-                <PublishedClipRow key={clip.id} clip={clip} />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {publishedStories.map((story) => (
-                <PublishedStoryRow key={story.id} story={story} />
-              ))}
-            </div>
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function PublishedStoryRow({ story }: { story: Story }) {
-  const videoUrl = story.platformUrl ?? (story.platformVideoId ? `https://www.youtube.com/watch?v=${story.platformVideoId}` : undefined);
-
-  return (
-    <div className="rounded-control border border-border bg-muted/20 px-4 py-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <p className="font-medium text-foreground">{story.title}</p>
-          <p className="text-sm text-muted-foreground">
-            Published {story.scheduledUploadTime ? new Date(story.scheduledUploadTime).toLocaleString() : "to YouTube"}
-          </p>
-        </div>
-        {videoUrl ? (
-          <Link
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            href={videoUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Open on YouTube
-          </Link>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function PublishedClipRow({ clip }: { clip: Clip }) {
-  const archiveFolder = clip.localArchiveStorageKey
-    ? clip.localArchiveStorageKey.split("/").slice(0, -1).join("/")
-    : undefined;
-
-  return (
-    <div className="rounded-control border border-border bg-muted/20 px-4 py-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <p className="font-medium text-foreground">{clip.title}</p>
-          {archiveFolder ? (
-            <p className="text-sm text-muted-foreground">Folder: {archiveFolder}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">Archive folder is not available for this older publish.</p>
-          )}
-        </div>
-        {clip.youtubeVideoUrl ? (
-          <Link
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            href={clip.youtubeVideoUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Open on YouTube
-          </Link>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
+import { appRoutes } from "@/lib/constants/routes";
+import { formatDuration } from "@/lib/utils/format";
 export default function PublishPage() {
   const { user } = useAuth();
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
-  const projectsQuery = useProjectsQuery(Boolean(user?.id));
-  const reviewProject = projectsQuery.data?.find((project) => project.status === "review") ?? projectsQuery.data?.[0];
-  const clipsQuery = useProjectClipsQuery(reviewProject?.id ?? "");
-  const channelsQuery = useChannelsQuery(Boolean(user?.id));
-  const clips = clipsQuery.data ?? [];
-  const publishableClip = clips.find(
-    (clip) => clip.reviewStatus === "approved" && clip.renderStatus === "rendered" && clip.publishStatus !== "published"
+  const [projectId, setProjectId] = useState("");
+  const [clipId, setClipId] = useState("");
+  const projects = useProjectsQuery(Boolean(user?.id));
+  const project =
+    projects.data?.find((p) => p.id === projectId) ??
+    projects.data?.find((p) => p.status === "review") ??
+    projects.data?.[0];
+  const query = useProjectClipsQuery(
+    project?.accountId ? "" : (project?.id ?? ""),
   );
-  const hasApprovedClip = clips.some((clip) => clip.reviewStatus === "approved");
-  const allApprovedClipsPublished =
-    hasApprovedClip &&
-    !publishableClip &&
-    clips.every((clip) => clip.reviewStatus !== "approved" || clip.publishStatus === "published");
-
+  const channels = useChannelsQuery(Boolean(user?.id));
+  const ready = (query.data ?? []).filter(
+    (c) =>
+      c.reviewStatus === "approved" &&
+      c.renderStatus === "rendered" &&
+      c.publishStatus !== "published",
+  );
+  const published = (query.data ?? []).filter(
+    (c) => c.publishStatus === "published",
+  );
+  const selected = ready.find((c) => c.id === clipId) ?? ready[0];
   return (
     <div className="space-y-6">
       <PageHeader
-        showTitle={false}
-        eyebrow="Publish"
-        title="Queue approved clips"
-        description="Treat publishing as the final confirmation step. Channel state, metadata, and privacy settings should all be visible here."
+        title="Publishing"
+        description="Review your final clips, choose a channel, and publish when you are ready."
       />
-      <SectionCard
-        title="Publish selected clip"
-        description="In V1 this page can act as a simple publishing fallback outside the review workspace."
-      >
-        {publishableClip ? (
-          <div className="mx-auto max-w-2xl">
-            <PublishForm clip={publishableClip} channels={channelsQuery.data ?? []} projectId={publishableClip.projectId} />
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {allApprovedClipsPublished
-              ? "All approved clips for this project are already published."
-              : "No approved clips are ready to publish yet."}
-          </p>
-        )}
-      </SectionCard>
-      <SectionCard
-        title="Published by project"
-        description="Open a project card to see the clips or faceless video already published from that project."
-      >
-        <div className="space-y-4">
-          {(projectsQuery.data ?? []).map((project) => (
-            <PublishedProjectCard
-              key={project.id}
-              expanded={expandedProjectId === project.id}
-              onToggle={() => setExpandedProjectId((current) => (current === project.id ? null : project.id))}
-              project={project}
-            />
+      {projects.isError ? (
+        <LoadFailure
+          message="Projects could not be loaded."
+          onRetry={() => projects.refetch()}
+        />
+      ) : null}
+      <div className="max-w-sm space-y-2">
+        <Label htmlFor="publish-project">Project</Label>
+        <Select
+          id="publish-project"
+          value={project?.id ?? ""}
+          onChange={(e) => {
+            setProjectId(e.target.value);
+            setClipId("");
+          }}
+        >
+          <option value="" disabled>
+            Choose a project
+          </option>
+          {projects.data?.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
+            </option>
           ))}
+        </Select>
+      </div>
+      {project?.accountId ? (
+        <EmptyState
+          title="This project uses a clip queue"
+          description="Upload, schedule, and publish its finished clips from the project workspace."
+          ctaHref={appRoutes.projects + "/" + project.id}
+          ctaLabel="Open clip queue"
+        />
+      ) : query.isError ? (
+        <LoadFailure
+          message="Clips could not be loaded."
+          onRetry={() => query.refetch()}
+        />
+      ) : query.isPending && project ? (
+        <Skeleton className="h-80" aria-busy="true" />
+      ) : (
+        <div className="grid items-start gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <section className="overflow-hidden rounded-container border bg-card">
+            <div className="border-b px-4 py-4">
+              <h2 className="flex items-center gap-2 text-sm font-semibold">
+                <Send className="h-4 w-4" />
+                Ready to publish
+                <span className="ml-auto text-muted-foreground">
+                  {ready.length}
+                </span>
+              </h2>
+            </div>
+            <div className="space-y-1 p-2">
+              {ready.length ? (
+                ready.map((c) => (
+                  <button
+                    type="button"
+                    key={c.id}
+                    aria-pressed={selected?.id === c.id}
+                    onClick={() => {
+                      setClipId(c.id);
+                    }}
+                    className={
+                      "flex w-full items-start gap-3 rounded-control px-3 py-3 text-left " +
+                      (selected?.id === c.id
+                        ? "bg-accent"
+                        : "hover:bg-background")
+                    }
+                  >
+                    <Film className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0">
+                      <span className="line-clamp-2 block text-sm font-medium">
+                        {c.title}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {formatDuration(c.durationSeconds)}
+                      </span>
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p className="p-3 text-sm leading-6 text-muted-foreground">
+                  Approved, rendered clips will appear here.
+                </p>
+              )}
+            </div>
+          </section>
+          {selected ? (
+            <SectionCard title="Publish clip" description={selected.title}>
+              <div className="grid gap-6 sm:grid-cols-[180px_minmax(0,1fr)]">
+                <div>
+                  <VideoPlayer
+                    title={selected.title}
+                    src={selected.outputUrl}
+                    status={selected.renderStatus}
+                  />
+                </div>
+                <div>
+                  <PublishForm
+                    key={selected.id}
+                    clip={selected}
+                    channels={channels.data ?? []}
+                    projectId={selected.projectId}
+                  />
+                </div>
+              </div>
+            </SectionCard>
+          ) : (
+            <EmptyState
+              title="No clips ready to publish"
+              description="Approve your favorite clips in the review workspace. They will appear here after rendering."
+              ctaHref={
+                project
+                  ? appRoutes.projects + "/" + project.id + "/review"
+                  : appRoutes.createProject
+              }
+              ctaLabel={project ? "Review clips" : "Start a project"}
+            />
+          )}
         </div>
-      </SectionCard>
+      )}
+      {!project?.accountId ? (
+        <section className="overflow-hidden rounded-container border bg-card">
+          <div className="border-b px-5 py-4">
+            <h2 className="text-sm font-semibold">
+              Published clips{" "}
+              <span className="ml-1 text-muted-foreground">
+                {published.length}
+              </span>
+            </h2>
+          </div>
+          {published.length ? (
+            <div className="divide-y">
+              {published.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium">{c.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Published to YouTube
+                    </p>
+                    {c.localArchiveStorageKey ? (
+                      <details className="mt-2 text-xs text-muted-foreground">
+                        <summary className="cursor-pointer">
+                          Archive details
+                        </summary>
+                        <p className="mt-1 break-all">
+                          {c.localArchiveStorageKey
+                            .split("/")
+                            .slice(0, -1)
+                            .join("/")}
+                        </p>
+                      </details>
+                    ) : null}
+                  </div>
+                  {c.youtubeVideoUrl ? (
+                    <a
+                      className="inline-flex items-center gap-2 text-sm text-primary"
+                      href={c.youtubeVideoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open on YouTube
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="px-5 py-6 text-sm text-muted-foreground">
+              Published clips from this project will be listed here.
+            </p>
+          )}
+        </section>
+      ) : null}
+      {!channels.isPending &&
+      !channels.data?.some((c) => c.status === "connected") ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border bg-card p-4">
+          <p className="text-sm text-muted-foreground">
+            Connect a YouTube channel before publishing.
+          </p>
+          <Button type="button" asChild variant="outline">
+            <Link href={appRoutes.channels}>Manage channels</Link>
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { CloudUpload, ClipboardCheck, Send } from "lucide-react";
-
+import { Scissors, Film, ClipboardCheck, Send } from "lucide-react";
 export function AuthShell({
   title,
   description,
   children,
   footerLabel,
   footerHref,
-  footerLinkText
+  footerLinkText,
 }: {
   title: string;
   description: string;
@@ -18,68 +17,82 @@ export function AuthShell({
   footerLinkText: string;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground font-body overflow-x-hidden selection:bg-primary selection:text-white flex flex-col md:flex-row">
-      <section className="hidden md:flex flex-1 relative flex-col justify-between p-10 bg-background overflow-hidden">
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary blur-[120px]"></div>
-          <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full bg-accent blur-[100px]"></div>
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <section className="hidden flex-col justify-between bg-slate-950 p-12 text-white lg:flex xl:p-16">
+        <div className="flex items-center gap-2.5 text-lg font-semibold">
+          <span className="flex h-8 w-8 items-center justify-center rounded-control bg-white text-slate-950">
+            <Scissors className="h-4 w-4" />
+          </span>
+          Studio Pro
         </div>
-        <div className="relative z-10">
-          <span className="font-heading tracking-widest text-primary uppercase mb-6 block font-semibold text-xs">STUDIO PRO</span>
-          <h1 className="font-heading text-5xl font-bold text-white max-w-xl mb-4">Review faster. Publish cleaner.</h1>
-          <p className="font-body text-lg text-muted-foreground max-w-lg">
-            A focused control room for long-form uploads, AI clip generation, review workflows, and YouTube publishing.
+        <div className="max-w-md">
+          <p className="mb-4 text-sm text-slate-400">
+            A workspace built for clipping
+          </p>
+          <h2 className="text-4xl font-semibold leading-tight tracking-tight">
+            Make more of every video.
+          </h2>
+          <p className="mt-5 max-w-sm text-base leading-7 text-slate-300">
+            Find the moments worth sharing. Review your highlights, add
+            captions, and publish to YouTube.
+          </p>
+          <ol className="mt-10 divide-y divide-white/15 border-y border-white/15">
+            {[
+              {
+                icon: Film,
+                title: "Start with your source",
+                text: "Upload a video or paste a YouTube link.",
+              },
+              {
+                icon: ClipboardCheck,
+                title: "Choose your best moments",
+                text: "Preview each clip and review the captions.",
+              },
+              {
+                icon: Send,
+                title: "Publish when you are ready",
+                text: "You choose the channel and visibility.",
+              },
+            ].map(({ icon: Icon, title, text }, index) => (
+              <li key={title} className="flex gap-4 py-5">
+                <span className="pt-0.5 text-xs text-slate-400">
+                  0{index + 1}
+                </span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
+                    {text}
+                  </p>
+                </div>
+                <Icon className="mt-1 h-4 w-4 text-slate-400" />
+              </li>
+            ))}
+          </ol>
+        </div>
+        <p className="text-xs text-slate-500">Source. Select. Share.</p>
+      </section>
+      <main className="flex items-center justify-center bg-card px-6 py-12 sm:px-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-10 flex items-center gap-2 text-lg font-semibold lg:hidden">
+            <Scissors className="h-5 w-5 text-primary" />
+            Studio Pro
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          <p className="mb-8 mt-2 text-sm leading-6 text-muted-foreground">
+            {description}
+          </p>
+          {children}
+          <p className="mt-7 text-center text-sm text-muted-foreground">
+            {footerLabel}{" "}
+            <Link
+              className="font-medium text-primary underline-offset-4 hover:underline"
+              href={footerHref}
+            >
+              {footerLinkText}
+            </Link>
           </p>
         </div>
-        <div className="relative z-10 grid grid-cols-3 gap-4">
-          <div className="bg-card p-6 rounded-container transition-all hover:bg-secondary group cursor-default">
-            <CloudUpload className="text-accent mb-2 h-6 w-6" />
-            <h3 className="font-heading font-semibold text-white text-base mb-1">Upload</h3>
-            <p className="font-body text-sm text-muted-foreground">High-speed ingestion for long-form raw assets.</p>
-          </div>
-          <div className="bg-card p-6 rounded-container transition-all hover:bg-secondary group cursor-default">
-            <ClipboardCheck className="text-primary mb-2 h-6 w-6" />
-            <h3 className="font-heading font-semibold text-white text-base mb-1">Review</h3>
-            <p className="font-body text-sm text-muted-foreground">Frame-accurate feedback for creative teams.</p>
-          </div>
-          <div className="bg-card p-6 rounded-container transition-all hover:bg-secondary group cursor-default">
-            <Send className="text-ring mb-2 h-6 w-6" />
-            <h3 className="font-heading font-semibold text-white text-base mb-1">Publish</h3>
-            <p className="font-body text-sm text-muted-foreground">One-click distribution to global platforms.</p>
-          </div>
-        </div>
-      </section>
-      
-      <section className="flex-1 flex items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-[440px]">
-          <div className="bg-card p-10 rounded-container shadow-2xl border border-border/60">
-            <div className="mb-10">
-              <span className="font-heading font-semibold text-xs tracking-widest text-primary uppercase mb-2 block">STUDIO PRO</span>
-              <h2 className="font-heading text-3xl font-bold text-white mb-2">{title}</h2>
-              <p className="font-body text-base text-muted-foreground">{description}</p>
-            </div>
-            
-            {children}
-            
-            <div className="mt-10 text-center">
-              <p className="font-body text-sm text-muted-foreground">
-                {footerLabel}{" "}
-                <Link className="text-accent font-bold hover:underline ml-1 transition-colors" href={footerHref}>
-                  {footerLinkText}
-                </Link>
-              </p>
-            </div>
-          </div>
-          
-          <div className="mt-10 flex justify-center items-center gap-6">
-            <nav className="flex gap-4">
-              <a className="font-heading font-semibold text-xs text-muted-foreground hover:text-white transition-colors" href="#">Terms</a>
-              <a className="font-heading font-semibold text-xs text-muted-foreground hover:text-white transition-colors" href="#">Privacy</a>
-              <a className="font-heading font-semibold text-xs text-muted-foreground hover:text-white transition-colors" href="#">Help</a>
-            </nav>
-          </div>
-        </div>
-      </section>
+      </main>
     </div>
   );
 }

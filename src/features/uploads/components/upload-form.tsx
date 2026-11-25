@@ -1,185 +1,173 @@
 "use client";
-
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { SectionCard } from "@/components/common/section-card";
+import { InlineError } from "@/components/common/inline-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/features/auth/components/auth-provider";
 import { appRoutes } from "@/lib/constants/routes";
+import { queryKeys } from "@/lib/api/query-keys";
 import { useCreateUploadMutation } from "../hooks/use-create-upload";
-import { uploadVideoSchema, type UploadVideoValues } from "../schemas/upload-video-schema";
+import {
+  uploadVideoSchema,
+  type UploadVideoValues,
+} from "../schemas/upload-video-schema";
+import type { SubtitleStyleValues } from "../types";
 import { UploadDropzone } from "./upload-dropzone";
-import { UploadProgressCard } from "./upload-progress-card";
-
+import { SourceTabs } from "./source-tabs";
+import {
+  SubtitleStyleFields,
+  defaultSubtitleStyleValues,
+} from "./subtitle-style-fields";
 export function UploadForm() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [selectedFile, setSelectedFile] = useState<File | undefined>();
+  const router = useRouter(),
+    client = useQueryClient();
   const mutation = useCreateUploadMutation();
+  const [selectedFile, setSelectedFile] = useState<File>();
+  const [style, setStyle] = useState<SubtitleStyleValues>(
+    defaultSubtitleStyleValues,
+  );
   const form = useForm<UploadVideoValues>({
     resolver: zodResolver(uploadVideoSchema),
     defaultValues: {
       title: "",
       description: "",
       hashtags: "shorts",
-      targetClipCount: 5,
-      fontFamily: "DejaVu Sans",
-      fontSize: 64,
-      fillColor: "#FFFFFF",
-      strokeColor: "#000000",
-      highlightColor: "#FFD54A",
-      position: "bottom_center",
-      maxCharsPerLine: 28,
-      maxLines: 2
-    }
+      ...defaultSubtitleStyleValues,
+    },
   });
-
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-
-    if (selectedFile) {
-      form.setValue("video", selectedFile, { shouldValidate: true });
-    }
-  }, [form, selectedFile, user]);
-
   const onSubmit = form.handleSubmit(async (values) => {
-    const result = await mutation.mutateAsync(values);
-    router.push(`${appRoutes.projects}/${result.project.id}`);
+    try {
+      const result = await mutation.mutateAsync({ ...values, preset: style.preset });
+      await client.invalidateQueries({ queryKey: queryKeys.projects.all });
+      router.push(appRoutes.projects + "/" + result.project.id);
+    } catch {
+      /* The shared toast reports the request failure. */
+    }
   });
-
+  const setCaptionStyle = (next: SubtitleStyleValues) => {
+    setStyle(next);
+    const keys = [
+      "fontFamily",
+      "fontSize",
+      "fillColor",
+      "strokeColor",
+      "highlightColor",
+      "position",
+      "maxCharsPerLine",
+      "maxLines",
+    ] as const;
+    keys.forEach((key) =>
+      form.setValue(key, next[key], { shouldValidate: true }),
+    );
+  };
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <SectionCard
-        title="Upload source video"
-        description="Keep this form tight. The follow-up project page becomes the main command center for processing and review."
-      >
-        <form className="space-y-6" onSubmit={onSubmit}>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <PageHeader
+        title="New clipping project"
+        description="Start with a video. Choose the highlights you want to keep."
+      />
+      <SourceTabs active="file" />
+      <form onSubmit={onSubmit} className="space-y-5">
+        <SectionCard
+          title="Source video"
+          description="Upload the original video you want to clip."
+        >
           <UploadDropzone
             file={selectedFile}
-            onFileSelect={setSelectedFile}
+            onFileSelect={(file) => {
+              setSelectedFile(file);
+              if (file) {
+                form.setValue("video", file, { shouldValidate: true });
+                if (!form.getValues("title"))
+                  form.setValue("title", file.name.replace(/\.[^.]+$/, ""), {
+                    shouldValidate: true,
+                  });
+              }
+            }}
             error={form.formState.errors.video?.message}
           />
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="title">Project title</Label>
-              <Input id="title" placeholder="Podcast highlights for April launch" {...form.register("title")} />
+          <div className="mt-5">
+            <div className="space-y-2">
+              <Label htmlFor="title">Project name</Label>
+              <Input
+                id="title"
+                placeholder="e.g. Weekly interview highlights"
+                {...form.register("title")}
+              />
               {form.formState.errors.title ? (
-                <p className="text-sm text-rose-700">{form.formState.errors.title.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Optional internal notes for the source upload." {...form.register("description")} />
-              {form.formState.errors.description ? (
-                <p className="text-sm text-rose-700">{form.formState.errors.description.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="hashtags">Hashtags</Label>
-              <Input id="hashtags" placeholder="shorts, lakers, houston" {...form.register("hashtags")} />
-              {form.formState.errors.hashtags ? (
-                <p className="text-sm text-rose-700">{form.formState.errors.hashtags.message}</p>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  Separate tags with commas or spaces. We&apos;ll carry these into the publish form later.
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.title.message}
                 </p>
-              )}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <div className="rounded-control border border-border bg-background/80 p-5">
-                <div className="mb-4">
-                  <p className="text-sm font-semibold text-foreground">Subtitle style for final Shorts render</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    These settings are stored on the project and reused when the backend renders the final vertical Shorts video.
-                  </p>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="targetClipCount">Clips to render</Label>
-                    <Input
-                      id="targetClipCount"
-                      min={1}
-                      max={20}
-                      type="number"
-                      {...form.register("targetClipCount", { valueAsNumber: true })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fontFamily">Font family</Label>
-                    <Input id="fontFamily" placeholder="DejaVu Sans" {...form.register("fontFamily")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fontSize">Font size</Label>
-                    <Input id="fontSize" min={24} max={120} type="number" {...form.register("fontSize", { valueAsNumber: true })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fillColor">Fill color</Label>
-                    <Input id="fillColor" type="color" {...form.register("fillColor")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="strokeColor">Stroke color</Label>
-                    <Input id="strokeColor" type="color" {...form.register("strokeColor")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="highlightColor">Highlight color</Label>
-                    <Input id="highlightColor" type="color" {...form.register("highlightColor")} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="position">Subtitle position</Label>
-                    <Select id="position" {...form.register("position")}>
-                      <option value="bottom_center">Bottom center</option>
-                      <option value="top_center">Top center</option>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="maxCharsPerLine">Max chars per line</Label>
-                    <Input
-                      id="maxCharsPerLine"
-                      min={12}
-                      max={42}
-                      type="number"
-                      {...form.register("maxCharsPerLine", { valueAsNumber: true })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="maxLines">Max lines</Label>
-                    <Input id="maxLines" min={1} max={4} type="number" {...form.register("maxLines", { valueAsNumber: true })} />
-                  </div>
-                </div>
-              </div>
+              ) : null}
             </div>
           </div>
-          <div className="flex items-center justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={() => router.push(appRoutes.dashboard)}>
+        </SectionCard>
+        <SectionCard
+          title="Caption style"
+          description="Applied when your approved clips are rendered."
+        >
+          <SubtitleStyleFields value={style} onChange={setCaptionStyle} />
+        </SectionCard>
+        <details className="rounded-container border bg-card p-5">
+          <summary className="cursor-pointer text-sm font-medium">
+            Project details{" "}
+            <span className="ml-1 font-normal text-muted-foreground">
+              (optional)
+            </span>
+          </summary>
+          <div className="mt-5 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" {...form.register("description")} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hashtags">Hashtags</Label>
+              <Input
+                id="hashtags"
+                placeholder="#shorts #interview"
+                {...form.register("hashtags")}
+              />
+            </div>
+          </div>
+        </details>
+        {Object.keys(form.formState.errors).some(
+          (key) => !["title", "video"].includes(key),
+        ) ? (
+          <InlineError message="Check the caption settings and project details before continuing." />
+        ) : null}
+        <div className="flex flex-col gap-4 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="h-4 w-4" />
+            You review every clip before publishing.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.push(appRoutes.projects)}
+              disabled={mutation.isPending}
+            >
               Cancel
             </Button>
-            <Button disabled={mutation.isPending} type="submit">
-              {mutation.isPending ? "Starting workflow..." : "Create Project"}
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+              {mutation.isPending ? "Uploading video..." : "Find clips"}
             </Button>
           </div>
-        </form>
-      </SectionCard>
-      <div className="space-y-6">
-        <UploadProgressCard
-          title="What happens next"
-          description="After upload, we route the user straight into the project page where ingest, transcription, clip analysis, and render states are polled."
-        />
-        <SectionCard title="Operator notes">
-          <ul className="space-y-3 text-sm text-muted-foreground">
-            <li>Use the project page for live pipeline progress.</li>
-            <li>Move review decisions into the clip workspace.</li>
-            <li>Keep publish actions separate from initial upload.</li>
-          </ul>
-        </SectionCard>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

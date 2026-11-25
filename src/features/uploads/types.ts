@@ -13,7 +13,6 @@ export interface YouTubeSourceInput {
   title: string;
   description?: string;
   hashtags?: string;
-  targetClipCount: number;
   language: string;
   subtitlePreferences: ProjectSubtitlePreferences;
 }

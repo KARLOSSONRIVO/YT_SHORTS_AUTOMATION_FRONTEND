@@ -6,18 +6,10 @@ export function ProjectProgressPanel({ project }: { project: Project }) {
   return (
     <SectionCard
       title="Workflow progress"
-      description={
-        project.projectType === "faceless_story"
-          ? project.facelessRenderMode === "background_video"
-            ? "This Reddit project tracks the script, narration, subtitles, and final background-video render."
-            : "This project tracks the script, narration, subtitles, scene generation, and final vertical render."
-          : "This card is the project-level summary. Keep it readable and let the job timeline carry the deeper execution detail."
-      }
+      description="Track source processing, clip review, and publishing."
     >
       <WorkflowStageStepper
         currentStage={project.workflowStage}
-        projectType={project.projectType}
-        facelessRenderMode={project.facelessRenderMode}
       />
     </SectionCard>
   );

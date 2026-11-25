@@ -8,7 +8,7 @@ import { SidebarContent } from "./sidebar-nav";
 
 export function MobileNav({
   open,
-  onOpenChange
+  onOpenChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,12 +25,12 @@ export function MobileNav({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm lg:hidden" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/35 lg:hidden" />
         <Dialog.Content
           id="mobile-nav"
           aria-label="Main navigation"
           aria-describedby={undefined}
-          className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border/60 bg-background shadow-soft transition-transform duration-200 motion-reduce:transition-none data-[state=closed]:-translate-x-full lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border/60 bg-card shadow-soft transition-transform duration-200 motion-reduce:transition-none data-[state=closed]:-translate-x-full lg:hidden"
         >
           <Dialog.Title className="sr-only">Navigation</Dialog.Title>
           <Dialog.Close
@@ -39,7 +39,10 @@ export function MobileNav({
           >
             <X className="h-5 w-5" />
           </Dialog.Close>
-          <SidebarContent pathname={pathname} onNavigate={() => onOpenChange(false)} />
+          <SidebarContent
+            pathname={pathname}
+            onNavigate={() => onOpenChange(false)}
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

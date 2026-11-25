@@ -1,26 +1,36 @@
-import { SectionCard } from "@/components/common/section-card";
 import type { ClipSubtitle } from "@/features/clips/types";
-
-export function SubtitlePreview({ subtitle }: { subtitle?: ClipSubtitle }) {
+import { formatDuration } from "@/lib/utils/format";
+export function SubtitlePreview({
+  subtitle,
+  compact,
+}: {
+  subtitle?: ClipSubtitle;
+  compact?: boolean;
+}) {
   return (
-    <SectionCard
-      title="Subtitle preview"
-      description="For V1, keep this read-only. It gives reviewers confidence without forcing subtitle editing to land on day one."
+    <section
+      aria-label="Caption transcript"
+      className={compact ? "" : "rounded-container border bg-card p-5"}
     >
-      <div className="space-y-3">
+      {!compact ? (
+        <h2 className="mb-4 text-base font-semibold">Captions</h2>
+      ) : null}
+      <div className="max-h-[420px] space-y-4 overflow-y-auto pr-2">
         {subtitle?.segments?.length ? (
-          subtitle.segments.slice(0, 6).map((segment, index) => (
-            <div key={`${segment.start}-${index}`} className="rounded-control bg-background px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                {segment.start}s - {segment.end}s
+          subtitle.segments.map((segment) => (
+            <div key={`${segment.start}-${segment.end}-${segment.text}`}>
+              <p className="mb-1 text-[11px] text-muted-foreground tabular-nums">
+                {formatDuration(segment.start)} - {formatDuration(segment.end)}
               </p>
-              <p className="mt-1 text-sm text-foreground">{segment.text}</p>
+              <p className="break-words text-sm leading-6">{segment.text}</p>
             </div>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground">Subtitle segments will appear here after the subtitle endpoint responds.</p>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Captions will appear once this clip has been transcribed.
+          </p>
         )}
       </div>
-    </SectionCard>
+    </section>
   );
 }

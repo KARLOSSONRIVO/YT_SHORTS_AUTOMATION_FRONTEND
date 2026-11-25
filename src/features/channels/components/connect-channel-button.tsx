@@ -7,14 +7,25 @@ export function ConnectChannelButton() {
   const mutation = useChannelOAuthMutation();
 
   return (
-    <Button
-      disabled={mutation.isPending}
-      onClick={async () => {
-        const result = await mutation.mutateAsync();
-        window.open(result.authorizationUrl, "_blank", "noopener,noreferrer");
-      }}
-    >
-      {mutation.isPending ? "Preparing OAuth..." : "Connect YouTube Channel"}
-    </Button>
+    <div className="space-y-2">
+      <Button
+        type="button"
+        disabled={mutation.isPending}
+        onClick={async () => {
+          try {
+            const result = await mutation.mutateAsync();
+            window.open(
+              result.authorizationUrl,
+              "_blank",
+              "noopener,noreferrer",
+            );
+          } catch {
+            /* The shared toast reports the request failure. */
+          }
+        }}
+      >
+        {mutation.isPending ? "Connecting..." : "Connect channel"}
+      </Button>
+    </div>
   );
 }

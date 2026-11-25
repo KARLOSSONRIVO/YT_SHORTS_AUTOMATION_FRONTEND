@@ -8,6 +8,7 @@ export function usePublishClipMutation(projectId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    meta: { successTitle: "Clip queued for YouTube publishing", errorTitle: "Clip could not be queued" },
     mutationFn: publishClip,
     onSuccess: () => {
       if (projectId) {

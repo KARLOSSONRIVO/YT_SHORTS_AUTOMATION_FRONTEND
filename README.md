@@ -1,6 +1,6 @@
 # Studio Pro
 
-Starter frontend scaffold for the YouTube Shorts automation dashboard.
+YouTube Shorts clipping dashboard for source uploads, YouTube links, clip review, captions, and publishing.
 
 ## Stack
 
@@ -34,4 +34,6 @@ Starter frontend scaffold for the YouTube Shorts automation dashboard.
 ## Notes
 
 - Register or log in first so the frontend can use a real Mongo user id for project and channel queries.
-- Clip metadata update and scheduled publishing UI can be added once backend endpoints exist.
+- Create Project opens source-video clipping. Use a YouTube link or queue a finished clip from the same page.
+- Finished-clip queues support scheduling, file replacement, reordering, retry, and upload.
+- AI story and Reddit generation are no longer available.

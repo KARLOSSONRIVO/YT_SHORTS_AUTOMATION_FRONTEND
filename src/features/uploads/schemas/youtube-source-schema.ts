@@ -23,7 +23,6 @@ export const youtubeSourceSchema = z.object({
   title: z.string().trim().min(3, "Project title must be at least 3 characters.").max(160),
   description: z.string().max(5000).optional(),
   hashtags: z.string().max(300).optional(),
-  targetClipCount: z.coerce.number().int().min(1).max(20),
   language: z.string().min(2).max(12)
 });
 

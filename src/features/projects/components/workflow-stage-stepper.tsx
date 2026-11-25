@@ -1,48 +1,50 @@
-import { cn } from "@/lib/utils";
-import type { ProjectType, WorkflowStage } from "../types";
-
-const uploadedVideoStages: WorkflowStage[] = ["ingest", "transcription", "analysis", "render", "review", "publish", "completed"];
-const facelessStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "scenes", "animations", "ambience", "render", "completed"];
-const facelessAnimationStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "animations", "ambience", "render", "completed"];
-const facelessBackgroundVideoStages: WorkflowStage[] = ["draft", "script", "audio", "subtitles", "render", "completed"];
-
+import { Check } from "lucide-react";
+import type { WorkflowStage } from "../types";
+const stages: Array<{ id: WorkflowStage; label: string }> = [
+  { id: "ingest", label: "Upload" },
+  { id: "transcription", label: "Transcribe" },
+  { id: "analysis", label: "Find clips" },
+  { id: "render", label: "Render" },
+  { id: "review", label: "Review" },
+  { id: "publish", label: "Publish" },
+  { id: "completed", label: "Complete" },
+];
 export function WorkflowStageStepper({
   currentStage,
-  projectType,
-  facelessRenderMode
 }: {
   currentStage: WorkflowStage;
-  projectType: ProjectType;
-  facelessRenderMode?: "image_story" | "animation_story" | "background_video";
 }) {
-  const stages =
-    projectType === "faceless_story"
-      ? facelessRenderMode === "background_video"
-        ? facelessBackgroundVideoStages
-        : facelessRenderMode === "animation_story"
-        ? facelessAnimationStages
-        : facelessStages
-      : uploadedVideoStages;
-  const activeIndex = stages.indexOf(currentStage);
-
+  const active = stages.findIndex((s) => s.id === currentStage);
   return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
-      {stages.map((stage, index) => (
-        <div key={stage} className="flex items-center gap-3">
-          <div
-            className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold",
-              index <= activeIndex ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-muted-foreground"
-            )}
+    <ol className="grid gap-4 sm:grid-cols-4 xl:grid-cols-7">
+      {stages.map((stage, i) => (
+        <li
+          key={stage.id}
+          aria-current={i === active ? "step" : undefined}
+          className="flex items-center gap-2.5"
+        >
+          <span
+            className={
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium " +
+              (i <= active
+                ? "bg-accent text-primary"
+                : "bg-secondary text-muted-foreground")
+            }
           >
-            {index + 1}
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Stage</p>
-            <p className="truncate text-sm font-medium capitalize text-foreground">{stage}</p>
-          </div>
-        </div>
+            {i < active ? <Check className="h-3.5 w-3.5" /> : i + 1}
+          </span>
+          <span
+            className={
+              "text-xs " +
+              (i === active
+                ? "font-semibold text-foreground"
+                : "text-muted-foreground")
+            }
+          >
+            {stage.label}
+          </span>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }

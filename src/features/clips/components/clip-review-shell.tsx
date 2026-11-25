@@ -1,63 +1,89 @@
 "use client";
-
-import { useEffect, useMemo, useState } from "react";
-import { SectionCard } from "@/components/common/section-card";
-import type { Project } from "@/features/projects/types";
-import type { Clip } from "../types";
+import { useState } from "react";
+import { Select } from "@/components/ui/select";
 import { ClipDetailPanel } from "./clip-detail-panel";
 import { ClipGrid } from "./clip-grid";
-
+import type { Project } from "@/features/projects/types";
+import type { Clip } from "../types";
 export function ClipReviewShell({
-  project,
-  clips
+  clips,
 }: {
   project?: Project;
   clips: Clip[];
 }) {
-  const initialClipId = clips[0]?.id ?? null;
-  const [selectedClipId, setSelectedClipId] = useState<string | null>(initialClipId);
-
-  useEffect(() => {
-    if (!selectedClipId && clips[0]) {
-      setSelectedClipId(clips[0].id);
-    }
-  }, [clips, selectedClipId]);
-
-  const selectedClip = useMemo(() => clips.find((clip) => clip.id === selectedClipId), [clips, selectedClipId]);
-  const pendingReviewCount = useMemo(
-    () => clips.filter((clip) => clip.reviewStatus === "pending_review").length,
-    [clips]
-  );
-  const approvedCount = useMemo(() => clips.filter((clip) => clip.reviewStatus === "approved").length, [clips]);
-  const rejectedCount = useMemo(() => clips.filter((clip) => clip.reviewStatus === "rejected").length, [clips]);
-
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("source");
+  const visible = clips
+    .filter((c) => filter === "all" || c.reviewStatus === filter)
+    .sort((a, b) =>
+      sort === "score"
+        ? b.score - a.score
+        : a.startTimeSeconds - b.startTimeSeconds,
+    );
+  const selected = visible.find((c) => c.id === selectedId) ?? visible[0];
+  const pending = clips.filter(
+    (c) => c.reviewStatus === "pending_review",
+  ).length;
   return (
-    <SectionCard
-      title={project ? `${project.title} review queue` : "Review queue"}
-      description="Use a two-pane review flow: fast clip scanning on the left and focused preview plus actions on the right."
-    >
-      <div className="mb-6 grid gap-3 rounded-control border border-border bg-background/80 p-4 md:grid-cols-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Pending Review</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">{pendingReviewCount}</p>
+    <div className="grid items-start gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
+      <section
+        aria-label="Candidate clips"
+        className="order-2 overflow-hidden rounded-container border bg-card lg:order-1"
+      >
+        <div className="space-y-3 border-b p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold">
+              Clips{" "}
+              <span className="ml-1 text-muted-foreground">{clips.length}</span>
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {pending} to review
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Select
+              aria-label="Filter clips"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="h-9 px-2 text-xs"
+            >
+              <option value="all">All clips</option>
+              <option value="pending_review">Needs review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </Select>
+            <Select
+              aria-label="Sort clips"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="h-9 px-2 text-xs"
+            >
+              <option value="source">Source order</option>
+              <option value="score">Highest score</option>
+            </Select>
+          </div>
         </div>
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Approved</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">{approvedCount}</p>
+        <div className="max-h-[700px] overflow-y-auto p-2">
+          <ClipGrid
+            clips={visible}
+            selectedClipId={selected?.id}
+            onSelect={(id) => {
+              setSelectedId(id);
+              if (window.innerWidth < 1024)
+                document
+                  .getElementById("clip-inspector")
+                  ?.scrollIntoView({ behavior: "instant", block: "start" });
+            }}
+          />
         </div>
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Rejected</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">{rejectedCount}</p>
-        </div>
+      </section>
+      <div
+        id="clip-inspector"
+        className="order-1 min-w-0 scroll-mt-4 lg:order-2"
+      >
+        <ClipDetailPanel key={selected?.id ?? "empty"} clip={selected} />
       </div>
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1.15fr)_420px]">
-        <div className="min-w-0">
-          <ClipGrid clips={clips} onSelect={setSelectedClipId} selectedClipId={selectedClipId} />
-        </div>
-        <div className="xl:sticky xl:top-6">
-          <ClipDetailPanel clip={selectedClip} />
-        </div>
-      </div>
-    </SectionCard>
+    </div>
   );
 }

@@ -1,15 +1,18 @@
 "use client";
-
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Expand, LoaderCircle, Minimize, PauseCircle, PlayCircle, TriangleAlert, VideoOff } from "lucide-react";
+import { useToast } from "@/components/common/toast";
+import { useEffect, useRef, useState } from "react";
+import {
+  Expand,
+  Minimize,
+  Pause,
+  Play,
+  Loader2,
+  VideoOff,
+  RotateCcw,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/format";
 import type { ClipSubtitleSegment } from "@/features/clips/types";
-
-function formatPlaybackTime(totalSeconds: number) {
-  return formatDuration(Math.max(0, Math.floor(totalSeconds)));
-}
-
 export function VideoPlayer({
   title,
   src,
@@ -17,7 +20,7 @@ export function VideoPlayer({
   clipStartSeconds,
   clipEndSeconds,
   subtitleSegments,
-  className
+  className,
 }: {
   title: string;
   src?: string;
@@ -27,310 +30,198 @@ export function VideoPlayer({
   subtitleSegments?: ClipSubtitleSegment[];
   className?: string;
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [segmentElapsedSeconds, setSegmentElapsedSeconds] = useState(0);
-  const isSegmentPreview =
-    Boolean(src) &&
+  const showToast = useToast();
+  const container = useRef<HTMLDivElement>(null),
+    video = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false),
+    [fullscreen, setFullscreen] = useState(false);
+  const [elapsed, setElapsed] = useState(0),
+    [failed, setFailed] = useState(false);
+  const segment =
+    status !== "rendered" &&
     typeof clipStartSeconds === "number" &&
-    typeof clipEndSeconds === "number" &&
-    status !== "rendered";
-  const segmentDurationSeconds = useMemo(() => {
-    if (!isSegmentPreview || typeof clipStartSeconds !== "number" || typeof clipEndSeconds !== "number") {
-      return 0;
-    }
-
-    return Math.max(0, clipEndSeconds - clipStartSeconds);
-  }, [clipEndSeconds, clipStartSeconds, isSegmentPreview]);
-  const activeSubtitle = useMemo(() => {
-    if (!subtitleSegments?.length) {
-      return undefined;
-    }
-
-    return subtitleSegments.find(
-      (segment) => segmentElapsedSeconds >= segment.start && segmentElapsedSeconds <= segment.end
-    );
-  }, [segmentElapsedSeconds, subtitleSegments]);
-
+    typeof clipEndSeconds === "number";
+  const start = clipStartSeconds ?? 0,
+    end = clipEndSeconds ?? 0,
+    duration = Math.max(0, end - start);
+  const caption = subtitleSegments?.find(
+    (s) => elapsed >= s.start && elapsed <= s.end,
+  );
   useEffect(() => {
-    const video = videoRef.current;
-
-    if (!video || typeof clipStartSeconds !== "number" || typeof clipEndSeconds !== "number" || status === "rendered") {
-      return;
-    }
-
-    const handleLoadedMetadata = () => {
-      video.currentTime = clipStartSeconds;
-      setSegmentElapsedSeconds(0);
-    };
-
-    const handlePlay = () => {
-      if (video.currentTime < clipStartSeconds || video.currentTime > clipEndSeconds) {
-        video.currentTime = clipStartSeconds;
-      }
-
-       setIsPlaying(true);
-    };
-
-    const handleTimeUpdate = () => {
-      setSegmentElapsedSeconds(Math.max(0, video.currentTime - clipStartSeconds));
-
-      if (video.currentTime >= clipEndSeconds) {
-        video.pause();
-        video.currentTime = clipEndSeconds;
-        setSegmentElapsedSeconds(Math.max(0, clipEndSeconds - clipStartSeconds));
-      }
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-    };
-
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("ended", handleEnded);
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("pause", handlePause);
-      video.removeEventListener("ended", handleEnded);
-    };
-  }, [clipEndSeconds, clipStartSeconds, status, src]);
-
+    setPlaying(false);
+    setElapsed(0);
+    setFailed(false);
+  }, [src, clipStartSeconds, clipEndSeconds]);
   useEffect(() => {
-    if (!isSegmentPreview) {
-      setIsPlaying(false);
-      setSegmentElapsedSeconds(0);
-    }
-  }, [isSegmentPreview, src]);
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === containerRef.current);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
+    const change = () =>
+      setFullscreen(document.fullscreenElement === container.current);
+    document.addEventListener("fullscreenchange", change);
+    return () => document.removeEventListener("fullscreenchange", change);
   }, []);
-
-  const handleTogglePlayback = async () => {
-    const video = videoRef.current;
-
-    if (!video || !isSegmentPreview || typeof clipStartSeconds !== "number" || typeof clipEndSeconds !== "number") {
-      return;
-    }
-
-    if (video.currentTime < clipStartSeconds || video.currentTime >= clipEndSeconds) {
-      video.currentTime = clipStartSeconds;
-      setSegmentElapsedSeconds(0);
-    }
-
-    if (video.paused) {
-      await video.play().catch(() => undefined);
-      return;
-    }
-
-    video.pause();
-  };
-
-  const handleSeekSegment = (value: string) => {
-    const video = videoRef.current;
-
-    if (!video || !isSegmentPreview || typeof clipStartSeconds !== "number") {
-      return;
-    }
-
-    const nextElapsedSeconds = Number(value);
-
-    if (Number.isNaN(nextElapsedSeconds)) {
-      return;
-    }
-
-    video.currentTime = clipStartSeconds + nextElapsedSeconds;
-    setSegmentElapsedSeconds(nextElapsedSeconds);
-  };
-
-  const handleToggleFullscreen = async () => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    if (document.fullscreenElement === container) {
+  const toggleFullscreen = async () => {
+    if (!container.current) return;
+    if (document.fullscreenElement === container.current)
       await document.exitFullscreen().catch(() => undefined);
-      return;
-    }
-
-    await container.requestFullscreen().catch(() => undefined);
+    else await container.current.requestFullscreen().catch(() => undefined);
   };
-
-  if (src && status === "rendered") {
+  const togglePlayback = async () => {
+    const el = video.current;
+    if (!el) return;
+    if (el.paused) {
+      if (segment && (el.currentTime < start || el.currentTime >= end))
+        el.currentTime = start;
+      await el.play().catch((error: Error) => {
+        if (error.name !== "AbortError" && !el.error) {
+          showToast({ tone: "error", title: "Video playback could not start" });
+        }
+      });
+    } else el.pause();
+  };
+  if (!src || failed)
     return (
       <div
-        ref={containerRef}
         className={cn(
-          "group relative overflow-hidden rounded-container border border-border bg-slate-950 shadow-soft",
-          isFullscreen && "h-screen w-screen rounded-none border-0",
-          className
+          "flex aspect-[9/16] max-h-[44dvh] flex-col items-center justify-center gap-3 rounded-control bg-slate-900 px-6 text-center text-white",
+          className,
         )}
       >
-        <button
-          className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white opacity-0 backdrop-blur transition hover:bg-black/60 group-hover:opacity-100"
-          onClick={() => {
-            void handleToggleFullscreen();
-          }}
-          type="button"
-        >
-          {isFullscreen ? <Minimize className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-        </button>
-        <video
-          ref={videoRef}
-          className={cn("aspect-[9/16] w-full bg-black object-cover", isFullscreen && "h-screen w-full object-contain")}
-          controls
-          playsInline
-          preload="metadata"
-          src={src}
-        />
-      </div>
-    );
-  }
-
-  if (src && isSegmentPreview) {
-    return (
-      <div
-        ref={containerRef}
-        className={cn(
-          "group relative overflow-hidden rounded-container border border-border bg-slate-950 shadow-soft",
-          isFullscreen && "h-screen w-screen rounded-none border-0",
-          className
+        {status === "rendering" && !failed ? (
+          <Loader2 className="h-7 w-7 animate-spin motion-reduce:animate-none" />
+        ) : (
+          <VideoOff className="h-7 w-7 text-slate-400" />
         )}
-      >
-        <div className="border-b border-white/10 bg-slate-950/90 px-4 py-3 text-xs font-medium uppercase tracking-[0.24em] text-white/60">
-          <div className="flex items-center justify-between gap-3">
-            <span>Source Segment Preview</span>
-            <button
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
-              onClick={() => {
-                void handleToggleFullscreen();
-              }}
-              type="button"
-            >
-              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-        <video
-          ref={videoRef}
-          className={cn("aspect-[9/16] w-full bg-black object-cover", isFullscreen && "h-[calc(100vh-9.75rem)] w-full object-contain")}
-          playsInline
-          preload="metadata"
-          src={src}
-        />
-        <div className="pointer-events-none absolute inset-x-0 bottom-[5.75rem] flex justify-center px-4">
-          <div className="max-w-[90%] rounded-control bg-black/58 px-4 py-3 text-center shadow-[0_16px_60px_rgba(0,0,0,0.45)] backdrop-blur-sm">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/60">9:16 Shorts Preview</p>
-            <p className="text-base font-black uppercase leading-tight text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] sm:text-lg">
-              {activeSubtitle?.text ?? "Subtitles will appear here during playback."}
-            </p>
-          </div>
-        </div>
-        <div className={cn("space-y-4 bg-slate-950 px-4 py-4 text-white", isFullscreen && "mx-auto w-full max-w-3xl")}>
-          <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/60">
-            <span>
-              Clip Window {formatPlaybackTime(clipStartSeconds)} - {formatPlaybackTime(clipEndSeconds)}
-            </span>
-            <span>{formatPlaybackTime(segmentDurationSeconds)}</span>
-          </div>
-          <input
-            aria-label="Clip preview progress"
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#f97316]"
-            max={segmentDurationSeconds}
-            min={0}
-            onChange={(event) => handleSeekSegment(event.target.value)}
-            step={0.1}
-            type="range"
-            value={Math.min(segmentElapsedSeconds, segmentDurationSeconds)}
-          />
-          <div className="flex items-center justify-between gap-4">
-            <button
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-slate-950 transition hover:bg-white/90"
-              onClick={() => {
-                void handleTogglePlayback();
-              }}
-              type="button"
-            >
-              {isPlaying ? <PauseCircle className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
-              {isPlaying ? "Pause Clip" : "Play Clip"}
-            </button>
-            <div className="text-right text-sm text-white/75">
-              <p>
-                {formatPlaybackTime(segmentElapsedSeconds)} / {formatPlaybackTime(segmentDurationSeconds)}
-              </p>
-              <p className="text-xs text-white/50">You are previewing only the selected Shorts segment.</p>
-            </div>
-          </div>
-        </div>
+        <p className="text-sm font-medium">
+          {failed
+            ? "Preview could not be loaded"
+            : status === "failed"
+              ? "Render failed"
+              : "Preparing preview"}
+        </p>
+        <p className="max-w-xs text-xs leading-5 text-slate-300">
+          {failed
+            ? "Check your connection and try loading this clip again."
+            : "Your clip preview will appear here when it is available."}
+        </p>
+        {failed ? (
+          <button
+            type="button"
+            onClick={() => setFailed(false)}
+            className="mt-2 inline-flex items-center gap-2 rounded-control border border-slate-500 px-3 py-2 text-xs"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Retry preview
+          </button>
+        ) : null}
       </div>
     );
-  }
-
-  const statusCopy =
-    status === "rendering"
-      ? {
-          icon: LoaderCircle,
-          eyebrow: "Rendering",
-          description: "A source-segment preview should appear here first. The final rendered Short will replace it once rendering finishes."
-        }
-      : status === "failed"
-        ? {
-          icon: TriangleAlert,
-          eyebrow: "Render Failed",
-          description: "Rendered output failed, but the clip can still be reviewed from the source segment once the source media link is available."
-        }
-        : status === "queued"
-          ? {
-              icon: VideoOff,
-              eyebrow: "Awaiting Preview",
-              description: "Source-segment playback should appear here so you can review the clip before approving render."
-            }
-          : {
-              icon: PlayCircle,
-              eyebrow: "Preview",
-              description: "A playable video will appear here once a rendered clip is available."
-            };
-
-  const Icon = statusCopy.icon;
-
   return (
     <div
+      ref={container}
       className={cn(
-        "relative flex aspect-[9/16] items-center justify-center overflow-hidden rounded-container bg-[linear-gradient(180deg,rgba(30,41,59,0.94),rgba(17,24,39,0.98))] text-white",
-        className
+        "group relative overflow-hidden rounded-control bg-black text-white",
+        fullscreen &&
+          "flex h-screen w-screen flex-col justify-center rounded-none",
+        className,
       )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.32),_transparent_35%)]" />
-      <div className="relative flex max-w-[18rem] flex-col items-center gap-3 px-6 text-center">
-        <Icon className={cn("h-14 w-14 text-white/90", status === "rendering" ? "animate-spin" : "")} />
-        <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-white/60">{statusCopy.eyebrow}</p>
-          <p className="mt-2 max-w-[18rem] text-lg font-semibold">{title}</p>
-          <p className="mt-3 text-sm leading-6 text-white/70">{statusCopy.description}</p>
-        </div>
+      <div className="relative">
+        <video
+          ref={video}
+          src={src}
+          controls={!segment}
+          playsInline
+          preload="metadata"
+          aria-label={title}
+          className={cn(
+            "aspect-[9/16] max-h-[44dvh] w-full bg-black object-contain",
+            fullscreen && "h-[calc(100dvh-90px)] max-h-none",
+          )}
+          onError={() => {
+            setFailed(true);
+            showToast({ tone: "error", title: "Video preview could not be loaded", message: "Try loading the preview again." });
+          }}
+          onLoadedMetadata={(e) => {
+            if (segment) e.currentTarget.currentTime = start;
+          }}
+          onPlay={(e) => {
+            if (
+              segment &&
+              (e.currentTarget.currentTime < start ||
+                e.currentTarget.currentTime >= end)
+            )
+              e.currentTarget.currentTime = start;
+            setPlaying(true);
+          }}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+          onTimeUpdate={(e) => {
+            if (!segment) return;
+            const el = e.currentTarget;
+            setElapsed(Math.max(0, el.currentTime - start));
+            if (el.currentTime >= end && !el.paused) {
+              el.pause();
+              el.currentTime = end;
+            }
+          }}
+        />
+        <button
+          type="button"
+          aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          title={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          onClick={() => void toggleFullscreen()}
+          className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-control border border-white/20 bg-black/80 text-white opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100"
+        >
+          {fullscreen ? (
+            <Minimize className="h-4 w-4" />
+          ) : (
+            <Expand className="h-4 w-4" />
+          )}
+        </button>
+        {segment && caption ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-3 bottom-4 rounded-control bg-black/80 px-3 py-2 text-center text-sm font-bold uppercase leading-snug"
+          >
+            {caption.text}
+          </div>
+        ) : null}
       </div>
+      {segment ? (
+        <div className="space-y-2.5 bg-slate-950 p-3">
+          <input
+            type="range"
+            aria-label="Clip preview progress"
+            min={0}
+            max={duration}
+            step={0.1}
+            value={Math.min(elapsed, duration)}
+            onChange={(e) => {
+              if (video.current)
+                video.current.currentTime = start + Number(e.target.value);
+              setElapsed(Number(e.target.value));
+            }}
+            className="block h-1.5 w-full cursor-pointer accent-blue-400"
+          />
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => void togglePlayback()}
+              aria-label={playing ? "Pause clip" : "Play clip"}
+              className="flex h-9 items-center gap-2 rounded-control bg-white px-3 text-xs font-medium text-slate-950 hover:bg-slate-200"
+            >
+              {playing ? (
+                <Pause className="h-3.5 w-3.5" />
+              ) : (
+                <Play className="h-3.5 w-3.5" />
+              )}
+              {playing ? "Pause" : "Play"}
+            </button>
+            <span className="text-xs text-slate-300 tabular-nums">
+              {formatDuration(Math.floor(elapsed))} / {formatDuration(duration)}
+            </span>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

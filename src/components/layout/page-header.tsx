@@ -1,11 +1,8 @@
 import type { ReactNode } from "react";
-
 export function PageHeader({
-  eyebrow,
   title,
   description,
-  showTitle = true,
-  actions
+  actions,
 }: {
   eyebrow?: string;
   title: string;
@@ -14,13 +11,22 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div>
-        {showTitle && eyebrow ? <p className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.3em] text-primary">{eyebrow}</p> : null}
-        {showTitle ? <h1 className="mt-3 font-display text-3xl md:text-4xl font-medium tracking-tight text-foreground">{title}</h1> : null}
-        {description ? <p className={showTitle ? "mt-2 max-w-2xl text-sm text-muted-foreground" : "max-w-2xl text-sm text-muted-foreground"}>{description}</p> : null}
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
+        <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-[28px]">
+          {title}
+        </h1>
+        {description ? (
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
       </div>
-      {actions}
+      {actions ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,26 +1,26 @@
 import { apiRequest, apiUpload } from "@/lib/api/client";
-import type { UploadResponse, YouTubeSourceInput } from "../types";
+import type { SubtitleStylePreset, UploadResponse, YouTubeSourceInput } from "../types";
 
 export async function createUpload(input: {
   title: string;
+  preset?: SubtitleStylePreset;
   description?: string;
   hashtags?: string;
-  targetClipCount: number;
   fontFamily: string;
   fontSize: number;
   fillColor: string;
   strokeColor: string;
   highlightColor: string;
-  position: "bottom_center" | "top_center";
+  position: "bottom_center" | "top_center" | "middle_center";
   maxCharsPerLine: number;
   maxLines: number;
   video: File;
 }) {
   const formData = new FormData();
   formData.append("title", input.title);
+  if (input.preset) formData.append("preset", input.preset);
   if (input.description) formData.append("description", input.description);
   if (input.hashtags) formData.append("hashtags", input.hashtags);
-  formData.append("targetClipCount", `${input.targetClipCount}`);
   formData.append("fontFamily", input.fontFamily);
   formData.append("fontSize", `${input.fontSize}`);
   formData.append("fillColor", input.fillColor);
@@ -37,6 +37,6 @@ export async function createUpload(input: {
 export function createYouTubeSourceUpload(input: YouTubeSourceInput) {
   return apiRequest<UploadResponse>("/upload/source", {
     method: "POST",
-    json: input
+    json: input,
   });
 }

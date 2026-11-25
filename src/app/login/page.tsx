@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { AuthShell } from "@/features/auth/components/auth-shell";
@@ -25,7 +25,13 @@ export default function LoginPage() {
       footerLabel="Need an account?"
       footerLinkText="Create one"
     >
-      <LoginForm />
+      <Suspense
+        fallback={
+          <p className="text-sm text-muted-foreground">Loading sign in...</p>
+        }
+      >
+        <LoginForm />
+      </Suspense>
     </AuthShell>
   );
 }

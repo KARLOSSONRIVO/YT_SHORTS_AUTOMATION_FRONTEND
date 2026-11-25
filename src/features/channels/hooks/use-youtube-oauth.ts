@@ -5,6 +5,7 @@ import { getChannelOAuthUrl } from "../api/get-youtube-oauth-url";
 
 export function useChannelOAuthMutation() {
   return useMutation({
+    meta: { errorTitle: "YouTube connection could not be started" },
     mutationFn: () => getChannelOAuthUrl()
   });
 }

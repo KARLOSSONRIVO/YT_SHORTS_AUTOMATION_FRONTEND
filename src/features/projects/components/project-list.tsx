@@ -12,7 +12,7 @@ export function ProjectList({ projects, searchQuery = "" }: { projects: Project[
     return (
       <EmptyState
         title="No projects yet"
-        description="Choose a niche and YouTube account to create one unique 60-second faceless story each day."
+        description="Upload a source video or use a YouTube link to start clipping."
         ctaHref={appRoutes.createProject}
         ctaLabel="Create Project"
       />

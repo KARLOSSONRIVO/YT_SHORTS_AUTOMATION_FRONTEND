@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { InlineError } from "@/components/common/inline-error";
+import { LoadFailure } from "@/components/common/load-failure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectAutomationDashboard } from "@/features/automation/components/project-automation-dashboard";
 import { ProjectHeader } from "@/features/projects/components/project-header";
@@ -17,7 +17,7 @@ export default function ProjectDetailPage() {
   const jobsQuery = useProjectJobsQuery(projectId);
 
   if (projectQuery.isError) {
-    return <InlineError message="Project details could not be loaded." />;
+    return <LoadFailure message="Project details could not be loaded." />;
   }
 
   if (!projectQuery.data) {
@@ -30,7 +30,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  if (projectQuery.data.facelessSource === "daily_automation") {
+  if (projectQuery.data.contentType === "CLIP_UPLOAD" && projectQuery.data.accountId) {
     return <ProjectAutomationDashboard projectId={projectId} />;
   }
 

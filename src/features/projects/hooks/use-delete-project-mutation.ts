@@ -8,6 +8,7 @@ export function useDeleteProjectMutation(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    meta: { successTitle: "Project deleted", errorTitle: "Project could not be deleted" },
     mutationFn: () => deleteProject(projectId),
     onSuccess: async () => {
       await Promise.all([

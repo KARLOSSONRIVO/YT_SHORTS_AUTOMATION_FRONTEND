@@ -1,14 +1,9 @@
-export type ProjectType = "uploaded_video" | "faceless_story";
+export type ProjectType = "uploaded_video";
 
 export type ProjectStatus =
   | "draft"
   | "queued"
   | "processing"
-  | "writing_script"
-  | "generating_audio"
-  | "generating_subtitles"
-  | "generating_images"
-  | "animating_scenes"
   | "rendering"
   | "review"
   | "published"
@@ -20,18 +15,15 @@ export type WorkflowStage =
   | "ingest"
   | "transcription"
   | "analysis"
-  | "script"
-  | "audio"
-  | "subtitles"
-  | "scenes"
-  | "animations"
-  | "ambience"
   | "render"
   | "review"
   | "publish"
   | "completed";
 
+export type CaptionPreset = "bold_stroke" | "red_highlight" | "karaoke";
+
 export interface ProjectSubtitlePreferences {
+  preset?: CaptionPreset | "custom";
   fontFamily: string;
   fontSize: number;
   fillColor: string;
@@ -49,20 +41,11 @@ export interface Project {
   description?: string;
   hashtags?: string;
   projectType: ProjectType;
-  contentType?: "FACELESS_NICHE" | "REDDIT_STORY" | "CLIP_UPLOAD";
-  visualType?: "IMAGE" | "ANIMATED" | "AUTO";
-  facelessSource?: "daily_automation" | "archived_legacy";
-  nicheId?: string;
+  contentType?: "CLIP_UPLOAD";
   accountId?: string;
   automationEnabled?: boolean;
   automationStatus?: "active" | "paused" | "running" | "error";
-  topic?: string;
   platforms?: Array<"youtube">;
-  targetDurationSeconds?: number;
-  stylePreset?: string;
-  scriptFramework?: "psychology_truth" | "history_story" | "reddit_story" | "serialized_story";
-  facelessRenderMode?: "image_story" | "animation_story" | "background_video";
-  voice?: string;
   status: ProjectStatus;
   workflowStage: WorkflowStage;
   subtitlePreferences?: ProjectSubtitlePreferences;

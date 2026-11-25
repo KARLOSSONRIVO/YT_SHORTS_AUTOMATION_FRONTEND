@@ -1,44 +1,39 @@
 import Link from "next/link";
-import { ArrowRight, Clock } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Film, ArrowUpRight } from "lucide-react";
+import { StatusBadge } from "@/components/common/status-badge";
 import { formatRelativeDate } from "@/lib/utils/format";
-import { getProjectTypeLabel } from "../lib/project-status";
+import { getProjectTone } from "../lib/project-status";
 import type { Project } from "../types";
-
 export function ProjectCard({ project }: { project: Project }) {
   return (
-    <Link href={`/projects/${project.id}`} className="block group">
-      <Card className="relative flex h-full flex-col overflow-hidden p-5 transition-all duration-300 hover:bg-secondary/20">
-        {/* Glow effect on hover */}
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 opacity-0 blur-[40px] transition-all duration-500 group-hover:bg-primary/20 group-hover:opacity-100"></div>
-
-        <div className="mb-4 relative z-10">
-          <div className="space-y-2">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-              {getProjectTypeLabel(project.projectType, project.contentType)}
-            </span>
-            <h4 className="font-heading text-lg font-bold text-foreground line-clamp-1">{project.title}</h4>
-          </div>
+    <Link
+      href={`/projects/${project.id}`}
+      className="group min-w-0 overflow-hidden rounded-container border bg-card transition-colors hover:border-primary/50"
+    >
+      <div className="flex h-28 items-center justify-center border-b bg-secondary/50">
+        <Film className="h-9 w-9 text-muted-foreground/60" strokeWidth={1.5} />
+      </div>
+      <div className="p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground">
+            {project.accountId ? "Clip queue" : "Source video"}
+          </span>
+          <StatusBadge tone={getProjectTone(project.status)}>
+            {project.status}
+          </StatusBadge>
         </div>
-
-        <p className="line-clamp-2 text-sm text-muted-foreground flex-grow mb-6 relative z-10">
-          {project.description || "No internal description yet."}
-        </p>
-
-        <div className="mt-auto relative z-10 space-y-3">
-          <div className="flex items-center text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {project.updatedAt ? formatRelativeDate(project.updatedAt) : "Just now"}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between text-sm font-medium text-primary pt-1">
-            <span className="flex items-center gap-1 group-hover:underline">Open workspace</span>
-            <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-          </div>
+        <h2 className="truncate text-sm font-semibold group-hover:text-primary">
+          {project.title}
+        </h2>
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            {project.updatedAt
+              ? formatRelativeDate(project.updatedAt)
+              : "Just added"}
+          </span>
+          <ArrowUpRight className="h-4 w-4" />
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }

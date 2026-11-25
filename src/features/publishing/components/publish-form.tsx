@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { InlineError } from "@/components/common/inline-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,24 +14,36 @@ import { useProjectDetailQuery } from "@/features/projects/hooks/use-project-det
 import { usePublishClipMutation } from "../hooks/use-publish-clip-mutation";
 import { formatHashtags } from "../lib/hashtags";
 import { getSuggestedPublishMetadata } from "../lib/clip-metadata";
-import { publishClipSchema, type PublishClipValues } from "../schemas/publish-clip-schema";
+import {
+  publishClipSchema,
+  type PublishClipValues,
+} from "../schemas/publish-clip-schema";
 
 export function PublishForm({
   clip,
   channels,
   projectId,
   onSuccess,
-  onPendingChange
+  onPendingChange,
 }: {
   clip: Clip;
   channels: Channel[];
   projectId?: string;
-  onSuccess?: (result: { clipId: string; channelId: string; uploadHistoryId: string; youtubeVideoId?: string; videoUrl?: string }) => void;
+  onSuccess?: (result: {
+    clipId: string;
+    channelId: string;
+    uploadHistoryId: string;
+    youtubeVideoId?: string;
+    videoUrl?: string;
+  }) => void;
   onPendingChange?: (isPending: boolean) => void;
 }) {
   const mutation = usePublishClipMutation(projectId);
   const projectQuery = useProjectDetailQuery(projectId ?? "");
-  const suggestedMetadata = getSuggestedPublishMetadata(clip, projectQuery.data?.hashtags);
+  const suggestedMetadata = getSuggestedPublishMetadata(
+    clip,
+    projectQuery.data?.hashtags,
+  );
   const initializedClipId = useRef<string | null>(null);
   const suggestedHashtags = useRef(suggestedMetadata.hashtags);
   const isPublishable =
@@ -44,13 +57,20 @@ export function PublishForm({
       channelId: "",
       title: suggestedMetadata.title,
       hashtags: suggestedMetadata.hashtags,
-      privacyStatus: "private"
-    }
+      privacyStatus: "private",
+    },
   });
 
   useEffect(() => {
-    if (!form.getValues("channelId") && channels.length) {
-      form.setValue("channelId", channels[0].id, { shouldValidate: true });
+    if (
+      !form.getValues("channelId") &&
+      channels.some((channel) => channel.status === "connected")
+    ) {
+      form.setValue(
+        "channelId",
+        channels.find((channel) => channel.status === "connected")!.id,
+        { shouldValidate: true },
+      );
     }
   }, [channels, form]);
 
@@ -66,17 +86,22 @@ export function PublishForm({
       channelId: form.getValues("channelId"),
       title: suggestedMetadata.title,
       hashtags: suggestedMetadata.hashtags,
-      privacyStatus: "private"
+      privacyStatus: "private",
     });
   }, [clip.id, form, suggestedMetadata.hashtags, suggestedMetadata.title]);
 
   useEffect(() => {
-    if (!suggestedMetadata.hashtags || form.getValues("hashtags") !== suggestedHashtags.current) {
+    if (
+      !suggestedMetadata.hashtags ||
+      form.getValues("hashtags") !== suggestedHashtags.current
+    ) {
       return;
     }
 
     suggestedHashtags.current = suggestedMetadata.hashtags;
-    form.setValue("hashtags", suggestedMetadata.hashtags, { shouldValidate: false });
+    form.setValue("hashtags", suggestedMetadata.hashtags, {
+      shouldValidate: false,
+    });
   }, [form, suggestedMetadata.hashtags]);
 
   useEffect(() => {
@@ -84,11 +109,15 @@ export function PublishForm({
   }, [mutation.isPending, onPendingChange]);
 
   const onSubmit = form.handleSubmit(async (values) => {
-    const result = await mutation.mutateAsync({
-      ...values,
-      description: formatHashtags(values.hashtags)
-    });
-    onSuccess?.(result);
+    try {
+      const result = await mutation.mutateAsync({
+        ...values,
+        description: formatHashtags(values.hashtags),
+      });
+      onSuccess?.(result);
+    } catch {
+      /* The shared toast reports the request failure. */
+    }
   });
 
   return (
@@ -108,11 +137,13 @@ export function PublishForm({
         <Label htmlFor="channelId">Channel</Label>
         <Select id="channelId" {...form.register("channelId")}>
           <option value="">Select a channel</option>
-          {channels.map((channel) => (
-            <option key={channel.id} value={channel.id}>
-              {channel.title} ({channel.externalChannelId})
-            </option>
-          ))}
+          {channels
+            .filter((channel) => channel.status === "connected")
+            .map((channel) => (
+              <option key={channel.id} value={channel.id}>
+                {channel.title} ({channel.externalChannelId})
+              </option>
+            ))}
         </Select>
       </div>
       <div className="space-y-2">
@@ -121,9 +152,14 @@ export function PublishForm({
       </div>
       <div className="space-y-2">
         <Label htmlFor="hashtags">Hashtags</Label>
-        <Input id="hashtags" placeholder="shorts, ocean, story" {...form.register("hashtags")} />
+        <Input
+          id="hashtags"
+          placeholder="shorts, ocean, story"
+          {...form.register("hashtags")}
+        />
         <p className="text-xs text-muted-foreground">
-          Separate tags with commas or spaces. We&apos;ll format them as #hashtags on publish.
+          Separate tags with commas or spaces. We&apos;ll format them as
+          #hashtags on publish.
         </p>
       </div>
       <div className="space-y-2">
@@ -134,7 +170,23 @@ export function PublishForm({
           <option value="public">Public</option>
         </Select>
       </div>
-      <Button className="w-full" disabled={mutation.isPending || !channels.length || !isPublishable} type="submit">
+      {Object.keys(form.formState.errors).length ? (
+        <InlineError
+          message={Object.values(form.formState.errors)
+            .map((error) => error.message)
+            .filter(Boolean)
+            .join(" ")}
+        />
+      ) : null}
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={
+          mutation.isPending ||
+          !channels.some((channel) => channel.status === "connected") ||
+          !isPublishable
+        }
+      >
         {mutation.isPending ? "Queueing publish..." : "Publish to YouTube"}
       </Button>
     </form>

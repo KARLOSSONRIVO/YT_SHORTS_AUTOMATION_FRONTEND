@@ -1,70 +1,58 @@
 "use client";
-
 import Link from "next/link";
-import { Bell, LogOut, Menu, Settings2 } from "lucide-react";
+import { ChevronRight, Menu, Scissors } from "lucide-react";
 import { appRoutes } from "@/lib/constants/routes";
-import { useAuth } from "@/features/auth/components/auth-provider";
 
-function getPageTitle(pathname: string) {
-  if (pathname === appRoutes.dashboard) return "Project overview";
-  if (pathname === appRoutes.projects) return "Source video pipeline";
-  if (pathname === appRoutes.publish) return "Queue approved clips";
-  if (pathname.startsWith(appRoutes.channels)) return "YouTube channels";
-  if (pathname === appRoutes.createProject) return "Create project";
-  if (pathname.startsWith(`${appRoutes.projects}/`)) return "Project workspace";
-  return "Studio Pro";
+function pageName(pathname: string) {
+  if (pathname.includes("/review") || pathname.includes("/clips/"))
+    return "Clip review";
+  if (pathname.startsWith("/projects/new")) return "New project";
+  if (pathname.startsWith("/projects/")) return "Project";
+  if (pathname === "/projects") return "Projects";
+  if (pathname === "/publish") return "Publishing";
+  if (pathname.includes("/channels")) return "Channels";
+  return "Overview";
 }
-
 export function Topbar({
   pathname,
+  onOpenNav,
   navOpen,
-  onOpenNav
 }: {
   pathname: string;
-  navOpen?: boolean;
-  onOpenNav?: () => void;
+  onOpenNav: () => void;
+  navOpen: boolean;
 }) {
-  const { logout } = useAuth();
-
   return (
-    <header className="sticky top-0 z-40 flex w-full items-center justify-between border-b border-border/60 bg-background/80 px-4 lg:px-10 py-5 backdrop-blur-md">
-      <div className="flex items-center gap-3">
+    <header className="flex h-16 items-center justify-between gap-4 border-b bg-card px-4 sm:px-6 lg:px-8">
+      <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
-          onClick={onOpenNav}
-          aria-label="Open navigation"
-          aria-expanded={navOpen ?? false}
           aria-controls="mobile-nav"
-          className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent lg:hidden"
+          aria-expanded={navOpen}
+          aria-label="Open navigation"
+          className="flex h-10 w-10 items-center justify-center rounded-control hover:bg-secondary lg:hidden"
+          onClick={onOpenNav}
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
-          {getPageTitle(pathname)}
-        </h1>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <button aria-label="Notifications" className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent" title="Notifications">
-          <Bell className="h-5 w-5" />
-        </button>
         <Link
-          aria-label="Settings"
-          className="rounded-full p-2 text-muted-foreground transition-colors hover:text-accent"
-          href={appRoutes.channels}
-          title="Settings"
+          href={appRoutes.dashboard}
+          className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
         >
-          <Settings2 className="h-5 w-5" />
+          Workspace
         </Link>
-        <button
-          aria-label="Log out"
-          className="ml-2 rounded-full border-l border-border/60 p-2 pl-5 text-muted-foreground transition-colors hover:text-accent"
-          onClick={logout}
-          title="Log out"
-        >
-          <LogOut className="h-5 w-5" />
-        </button>
+        <ChevronRight
+          className="hidden h-3.5 w-3.5 text-muted-foreground sm:block"
+          aria-hidden="true"
+        />
+        <span className="truncate text-sm font-medium">
+          {pageName(pathname)}
+        </span>
       </div>
+      <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+        <Scissors className="h-3.5 w-3.5" aria-hidden="true" />
+        <span className="hidden sm:inline">Video clipping</span>
+      </span>
     </header>
   );
 }

@@ -2,72 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: Anton;
+  src: url('/fonts/Anton-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DejaVu Sans';
+  src: url('/fonts/DejaVuSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@keyframes toast-countdown {
+  to { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast-countdown { animation: toast-countdown linear both; }
+}
+
 @layer base {
   :root {
-    /* Aurora — indigo-charcoal ground, soft-gold primary, violet + teal accents */
-    --background: 231 23% 6%;
-    --foreground: 225 27% 94%;
-    --card: 234 21% 9%;
-    --card-foreground: 225 27% 94%;
-    --popover: 234 21% 9%;
-    --popover-foreground: 225 27% 94%;
-    --primary: 34 65% 73%;
-    --primary-foreground: 37 56% 7%;
-    --secondary: 232 17% 13%;
-    --secondary-foreground: 225 27% 94%;
-    --muted: 230 12% 22%;
-    --muted-foreground: 228 12% 63%;
-    --accent: 248 87% 76%;
-    --accent-foreground: 231 23% 6%;
-    --accent-2: 172 61% 59%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 232 14% 17%;
-    --input: 234 20% 12%;
-    --ring: 248 87% 76%;
+    color-scheme: light;
+    --background: 220 20% 98%;
+    --foreground: 222 25% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 14%;
+    --primary: 225 65% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 17% 94%;
+    --secondary-foreground: 222 25% 20%;
+    --muted: 220 17% 94%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 225 60% 95%;
+    --accent-foreground: 225 65% 35%;
+    --accent-2: 161 55% 30%;
+    --destructive: 0 65% 43%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 16% 88%;
+    --input: 0 0% 100%;
+    --ring: 225 65% 46%;
   }
-
   * {
     @apply border-border;
   }
-
-  html {
-    scroll-behavior: smooth;
-  }
-
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
   }
-
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  summary {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
   ::selection {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+    background: hsl(var(--accent));
+    color: hsl(var(--foreground));
+  }
+  input[type="color"] {
+    padding: 4px;
+    cursor: pointer;
+  }
+  video {
+    color-scheme: dark;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
-
 @layer utilities {
-  .font-heading {
-    font-family: var(--font-heading), sans-serif;
-  }
-
-  .font-body {
-    font-family: var(--font-body), sans-serif;
-  }
-
+  .font-heading,
+  .font-body,
   .font-display {
-    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-family: var(--font-body), Arial, sans-serif;
   }
-
   .font-mono {
-    font-family: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
   }
-
-  /* Aurora depth: soft luminous glow, not hard neon */
-  .neon-glow-primary {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.18);
-  }
-
-  .neon-glow-accent:focus-within {
-    box-shadow: 0 0 24px hsl(var(--accent) / 0.22);
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }

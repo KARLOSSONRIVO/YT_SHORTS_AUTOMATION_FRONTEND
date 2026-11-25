@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useToast } from "@/components/common/toast";
 import { login as loginRequest } from "../api/login";
 import { register as registerRequest } from "../api/register";
 import { AUTH_STORAGE_KEY, type AuthUser, type LoginInput, type RegisterInput } from "../types";
@@ -17,6 +18,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const showToast = useToast();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -52,9 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout: () => {
         setUser(null);
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
+        showToast({ tone: "success", title: "Signed out" });
       }
     }),
-    [isReady, user]
+    [isReady, showToast, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

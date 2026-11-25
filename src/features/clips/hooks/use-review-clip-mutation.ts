@@ -9,10 +9,11 @@ export function useReviewClipMutation(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ clipId, reviewStatus }: { clipId: string; reviewStatus: "approved" | "rejected" }) =>
-      reviewClip(clipId, reviewStatus),
+    meta: { successTitle: "Clip review saved", errorTitle: "Clip review could not be saved" },
+    mutationFn: reviewClip,
     onMutate: async ({ clipId, reviewStatus }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.clips.byProject(projectId) });
+      if (reviewStatus === "approved") return;
       const previousClips = queryClient.getQueryData<Clip[]>(queryKeys.clips.byProject(projectId));
 
       queryClient.setQueryData<Clip[]>(queryKeys.clips.byProject(projectId), (current = []) =>
@@ -21,14 +22,10 @@ export function useReviewClipMutation(projectId: string) {
             ? {
                 ...clip,
                 reviewStatus,
-                publishStatus: reviewStatus === "approved" ? "queued" : "not_ready",
-                ...(reviewStatus === "rejected"
-                  ? {
-                      outputStorageKey: undefined,
-                      outputUrl: undefined,
-                      renderStatus: "queued" as const
-                    }
-                  : {})
+                publishStatus: "not_ready",
+                outputStorageKey: undefined,
+                outputUrl: undefined,
+                renderStatus: "queued"
               }
             : clip
         )
@@ -41,8 +38,16 @@ export function useReviewClipMutation(projectId: string) {
         queryClient.setQueryData(queryKeys.clips.byProject(projectId), context.previousClips);
       }
     },
-    onSettled: () => {
+    onSuccess: (updatedClip) => {
+      if (updatedClip) {
+        queryClient.setQueryData<Clip[]>(queryKeys.clips.byProject(projectId), (current) =>
+          current?.map((clip) => clip.id === updatedClip.id ? updatedClip : clip)
+        );
+      }
+    },
+    onSettled: (_data, _error, { clipId }) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.clips.byProject(projectId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.clips.subtitle(clipId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.byProject(projectId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
     }

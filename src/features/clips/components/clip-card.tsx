@@ -1,58 +1,71 @@
+"use client";
+import { Film, Check } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { formatDuration } from "@/lib/utils/format";
 import { cn } from "@/lib/utils";
 import { getReviewTone } from "../lib/clip-status";
 import type { Clip } from "../types";
-
 export function ClipCard({
   clip,
   selected,
-  onSelect
+  onSelect,
 }: {
   clip: Clip;
   selected?: boolean;
   onSelect: (clipId: string) => void;
 }) {
+  const media = clip.outputUrl || clip.sourceVideoUrl;
   return (
-    <button className="w-full text-left" onClick={() => onSelect(clip.id)} type="button">
-      <Card
-        className={cn(
-          "h-full overflow-hidden transition",
-          selected ? "border-primary ring-2 ring-primary/30" : "hover:-translate-y-0.5"
-        )}
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-controls="clip-inspector"
+      onClick={() => onSelect(clip.id)}
+      className={cn(
+        "flex w-full items-start gap-3 rounded-control border p-3 text-left transition-colors",
+        selected
+          ? "border-primary bg-accent"
+          : "border-transparent bg-card hover:bg-background",
+      )}
+    >
+      <span
+        className="relative flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-control bg-slate-900 text-white/60"
+        aria-hidden="true"
       >
-        <div className="relative aspect-[9/12] bg-[linear-gradient(180deg,rgba(30,41,59,0.92),rgba(17,24,39,0.95))]">
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-end bg-[linear-gradient(180deg,transparent,rgba(15,23,42,0.92))] px-4 py-4 text-xs text-white/80">
-            <span>{clip.outputUrl ? "Clip preview" : clip.sourceVideoUrl ? "Awaiting preview" : "No preview yet"}</span>
-          </div>
-        </div>
-        <CardContent className="space-y-3 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="line-clamp-2 text-sm font-semibold text-foreground">{clip.title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{formatDuration(clip.durationSeconds)}</p>
-            </div>
-            <StatusBadge tone={getReviewTone(clip.reviewStatus)}>{clip.reviewStatus}</StatusBadge>
-          </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Score {clip.score}</span>
-            {clip.youtubeVideoUrl ? (
-              <a
-                className="capitalize text-primary underline-offset-4 hover:underline"
-                href={clip.youtubeVideoUrl}
-                rel="noreferrer"
-                target="_blank"
-                onClick={(event) => event.stopPropagation()}
-              >
-                YouTube
-              </a>
-            ) : (
-              <span className="capitalize">{clip.publishStatus}</span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        {media ? (
+          <video
+            src={media}
+            muted
+            playsInline
+            preload="metadata"
+            className="pointer-events-none h-full w-full object-cover"
+            onLoadedMetadata={(e) => {
+              if (!clip.outputUrl)
+                e.currentTarget.currentTime = clip.startTimeSeconds;
+            }}
+          />
+        ) : (
+          <Film className="h-5 w-5" />
+        )}
+        <span className="absolute bottom-1 right-1 rounded-control bg-black/80 px-1 text-[10px] text-white tabular-nums">
+          {formatDuration(clip.durationSeconds)}
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="line-clamp-2 block text-sm font-medium">
+          {clip.title}
+        </span>
+        <span className="mt-2 flex flex-wrap items-center gap-2">
+          <StatusBadge tone={getReviewTone(clip.reviewStatus)}>
+            {clip.reviewStatus}
+          </StatusBadge>
+          {selected ? <Check className="h-3 w-3 text-primary" /> : null}
+        </span>
+        <span className="mt-1.5 block text-xs text-muted-foreground tabular-nums">
+          {formatDuration(clip.startTimeSeconds)} -{" "}
+          {formatDuration(clip.endTimeSeconds)}
+        </span>
+      </span>
     </button>
   );
 }
